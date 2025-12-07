@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tak Agro Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- SweetAlert -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body {
+      margin:0;
+      font-family: Arial, sans-serif;
+      background:#f3f4f6;
+    }
+
+    /* ---------- SIDEBAR ---------- */
+    .sidebar {
+      width:250px;
+      background:#1e293b;
+      color:#fff;
+      height:100vh;
+      position:fixed;
+      left:0;
+      top:0;
+      padding-top:20px;
+      transition:transform .3s ease;
+      z-index:10;
+    }
+    .sidebar h2 {
+      text-align:center;
+      margin-top:0;
+      margin-bottom:15px;
+    }
+    .sidebar a {
+      display:block;
+      padding:12px 18px;
+      color:#fff;
+      text-decoration:none;
+      font-size:15px;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar a:hover { background:#334155; }
+
+    /* Mobile: sidebar hidden by default */
+    @media(max-width:768px){
+      .sidebar {
+        transform:translateX(-260px);
+      }
+      .sidebar.open {
+        transform:translateX(0);
+      }
+    }
+
+    /* ---------- TOP BAR ---------- */
+    .topbar {
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:55px;
+      background:#ffffff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 15px;
+      box-shadow:0 2px 4px rgba(0,0,0,0.08);
+      z-index:20;
+    }
+    .topbar-title {
+      font-size:18px;
+      font-weight:600;
+    }
+
+    .menu-btn {
+      font-size:24px;
+      cursor:pointer;
+      display:none;
+    }
+    @media(max-width:768px){
+      .menu-btn {
+        display:block;
+      }
+    }
+
+    .profile-icon {
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      border:2px solid #e5e7eb;
+      cursor:pointer;
+      object-fit:cover;
+    }
+
+    /* ---------- PROFILE MENU ---------- */
+    .profile-menu {
+      position:absolute;
+      right:15px;
+      top:60px;
+      width:200px;
+      background:#fff;
+      border-radius:8px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.15);
+      overflow:hidden;
+      display:none;
+      z-index:30;
+    }
+    .profile-menu div {
+      padding:10px 14px;
+      font-size:14px;
+      border-bottom:1px solid #f1f5f9;
+      cursor:pointer;
+    }
+    .profile-menu div:hover {
+      background:#f3f4f6;
+    }
+
+    /* ---------- MAIN CONTENT ---------- */
+    .main {
+      margin-left:250px;
+      padding:80px 20px 20px;
+      transition:.3s;
+    }
+    @media(max-width:768px){
+      .main {
+        margin-left:0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+  <span class="topbar-title">Tak Agro</span>
+
+  <img id="profileIcon"
+       class="profile-icon"
+       src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+       onclick="toggleProfileMenu()">
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <h2>Tak Agro</h2>
+  <a href="index.html">🏠 Dashboard</a>
+  <a href="employee.html">👷 Employee</a>
+  <a href="buyer.html">🛒 Buyer</a>
+  <a href="product.html">📦 Product</a>
+  <a href="entry.html">📝 Entry</a>
+  <a href="income.html">💰 Income</a>
+  <a href="expenditure.html">🧾 Expenditure</a>
+  <a href="report.html">📊 Report</a>
+</div>
+
+<!-- PROFILE DROPDOWN -->
+<div id="profileMenu" class="profile-menu">
+  <div onclick="openProfile()">👤 Update Profile</div>
+  <div onclick="changePassword()">🔑 Change Password</div>
+  <div onclick="logoutUser()">🚪 Logout</div>
+</div>
+
+<!-- MAIN AREA -->
+<div class="main">
+  <h1>Welcome to Tak Agro</h1>
+  <p>Select a module from the sidebar.</p>
+</div>
+
+<!-- FIREBASE + AUTH LOGIC -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signOut,
+    updatePassword
+  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+  // 🔐 SAME CONFIG AS YOUR LOGIN PAGE
+  const firebaseConfig = {
+    apiKey: "AIzaSyApcn2ckkvfLaEuKEKOZfC6hcEfx44ZDJ0",
+    authDomain: "tak-agro.firebaseapp.com",
+    projectId: "tak-agro",
+    storageBucket: "tak-agro.firebasestorage.app",
+    messagingSenderId: "158309293772",
+    appId: "1:158309293772:web:ebca377434d940d0b5ac69"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const OWNER_EMAIL = "bhuraramtak81@gmail.com";
+
+  // ✅ AUTH CHECK
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    // optional owner restriction
+    if (user.email !== OWNER_EMAIL) {
+      await signOut(auth);
+      window.location.href = "login.html";
+      return;
+    }
+
+    // Load profile photo from Firestore (profiles/owner)
+    try {
+      const snap = await getDoc(doc(db, "profiles", "owner"));
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.photoURL) {
+          document.getElementById("profileIcon").src = data.photoURL;
+        }
+      }
+    } catch (e) {
+      console.log("Profile load error:", e);
+    }
+  });
+
+  // ========== GLOBAL FUNCTIONS ==========
+
+  // Sidebar toggle (mobile)
+  window.toggleSidebar = function () {
+    const sb = document.getElementById("sidebar");
+    sb.classList.toggle("open");
+  };
+
+  // Profile menu toggle
+  window.toggleProfileMenu = function () {
+    const pm = document.getElementById("profileMenu");
+    pm.style.display = pm.style.display === "block" ? "none" : "block";
+  };
+
+  // Open profile update page
+  window.openProfile = function () {
+    window.location.href = "profile-update.html";
+  };
+
+  // Change password (uses Firebase Auth)
+  window.changePassword = async function () {
+    const { value: newPass } = await Swal.fire({
+      title: "New Password",
+      input: "password",
+      inputPlaceholder: "Enter new password",
+      showCancelButton: true,
+      confirmButtonText: "Update"
+    });
+
+    if (!newPass) return;
+
+    if (newPass.length < 6) {
+      Swal.fire("Error", "Password must be at least 6 characters.", "error");
+      return;
+    }
+
+    try {
+      await updatePassword(auth.currentUser, newPass);
+      Swal.fire("Done!", "Password updated successfully.", "success");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  };
+
+  // Logout
+  window.logoutUser = async function () {
+    const res = await Swal.fire({
+      title: "Logout?",
+      showCancelButton: true,
+      confirmButtonText: "Logout"
+    });
+    if (!res.isConfirmed) return;
+
+    await signOut(auth);
+    window.location.href = "login.html";
+  };
+
+  // Close profile menu when click outside
+  window.addEventListener("click", (e) => {
+    const menu = document.getElementById("profileMenu");
+    const icon = document.getElementById("profileIcon");
+
+    if (e.target === icon) return;
+    if (menu && !menu.contains(e.target)) {
+      menu.style.display = "none";
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Product Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 16px;
+    background: #f3f4f6;
+    font-family: Arial, sans-serif;
+    color: #111827;
+  }
+
+  .wrapper { max-width: 1200px; margin: auto; }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .page-header-icon { font-size: 26px; }
+  .page-title { font-size: 22px; font-weight: 700; }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: none;
+    background: #e5e7eb;
+    cursor: pointer;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .back-btn:hover { background: #d1d5db; }
+
+  .card {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: block;
+    color: #374151;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+  }
+
+  input:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px 16px;
+  }
+
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .btn-primary { background: #2563eb; color:white; }
+  .btn-danger { background:#dc2626;color:white; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 999px; }
+
+  .spinner {
+    border: 3px solid #e5e7eb;
+    border-top: 3px solid #2563eb;
+    border-radius: 50%;
+    width: 16px; height: 16px;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { 100% { transform: rotate(360deg);} }
+
+  #loadingIcon { display:none; margin-left:10px; font-size:13px; }
+
+  /* FULL BORDER TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    border: 1px solid #d1d5db;
+  }
+  th, td {
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    white-space: nowrap;
+  }
+  thead { background: #f9fafb; }
+  tr:hover td { background: #f3f4f6; }
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+  <div class="page-header">
+    <div class="page-header-icon">📦</div>
+    <div class="page-title">Product Management</div>
+  </div>
+
+  <button class="back-btn" onclick="window.location.href='index.html'">⬅ Back to Dashboard</button>
+
+  <div class="card">
+    <div class="card-title">Add / Edit Product</div>
+
+    <input type="hidden" id="productId">
+
+    <div class="form-row">
+      <div>
+        <label>Product Name</label>
+        <input type="text" id="p_name" placeholder="Product Name">
+      </div>
+
+      <div>
+        <label>Category</label>
+        <input type="text" id="p_category" placeholder="Category">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>
+        <label>Unit</label>
+        <input type="text" id="p_unit" placeholder="Kg, Litre, Piece, Bag">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="saveBtn">Save</button>
+    <span id="loadingIcon"><span class="spinner"></span> Saving...</span>
+
+  </div>
+
+  <div class="card">
+    <div class="card-title">Product List</div>
+
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Unit</th>
+            <th>Edit</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs,
+  updateDoc, deleteDoc, doc, query, where
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
+  authDomain: "tak-agro.firebaseapp.com",
+  projectId: "tak-agro",
+  storageBucket: "tak-agro.firebasestorage.app",
+  messagingSenderId: "153802937772",
+  appId: "1:153802937772:web:abca377434d940d0b5ac69"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const productCol = collection(db,"products");
+
+const saveBtn = document.getElementById("saveBtn");
+const loadingIcon = document.getElementById("loadingIcon");
+const tableBody = document.getElementById("tableBody");
+
+/* ✅ DUPLICATE CHECK */
+async function duplicateProductCheck(name, category, unit, excludeId = null) {
+  const q = query(productCol, where("name", "==", name.toLowerCase()));
+  const snap = await getDocs(q);
+
+  let dup = false;
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
+
+    if (
+      d.category.toLowerCase() === category.toLowerCase() &&
+      d.unit.toLowerCase() === unit.toLowerCase() &&
+      docSnap.id !== excludeId
+    ) {
+      dup = true;
+    }
+  });
+
+  return dup;
+}
+
+/* SPINNER */
+function startLoad(){ loadingIcon.style.display="inline-flex"; saveBtn.disabled=true; }
+function stopLoad(){ loadingIcon.style.display="none"; saveBtn.disabled=false; }
+
+/* LOAD TABLE */
+async function loadProducts(){
+  tableBody.innerHTML = "";
+  const snap = await getDocs(productCol);
+
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
+
+    tableBody.innerHTML += `
+      <tr>
+        <td>${d.name}</td>
+        <td>${d.category}</td>
+        <td>${d.unit}</td>
+        <td><button class="btn-sm btn-primary" onclick="editProduct('${docSnap.id}','${d.name}','${d.category}','${d.unit}')">Edit</button></td>
+        <td><button class="btn-sm btn-danger" onclick="deleteProduct('${docSnap.id}')">Delete</button></td>
+      </tr>`;
+  });
+}
+
+/* EDIT POPUP */
+window.editProduct = async function (id, name, category, unit) {
+  const { value: formValues } = await Swal.fire({
+    title: "Edit Product",
+    html: `
+      <input id="sw_name" class="swal2-input" value="${name}">
+      <input id="sw_category" class="swal2-input" value="${category}">
+      <input id="sw_unit" class="swal2-input" value="${unit}">
+    `,
+    showCancelButton: true,
+    confirmButtonText: "Save",
+    preConfirm: () => {
+      return {
+        name: document.getElementById("sw_name").value.trim(),
+        category: document.getElementById("sw_category").value.trim(),
+        unit: document.getElementById("sw_unit").value.trim()
+      };
+    }
+  });
+
+  if (!formValues) return;
+
+  await updateDoc(doc(db,"products",id), formValues);
+  Swal.fire("Updated!", "Product updated successfully.", "success");
+  loadProducts();
+};
+
+/* DELETE */
+window.deleteProduct = async function(id){
+  const res = await Swal.fire({
+    title: "Delete Product?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes"
+  });
+
+  if(!res.isConfirmed) return;
+
+  await deleteDoc(doc(db,"products",id));
+  loadProducts();
+  Swal.fire("Deleted!", "", "success");
+};
+
+/* SAVE PRODUCT */
+saveBtn.addEventListener("click", async () => {
+
+  const id = productId.value;
+  const name = p_name.value.trim().toLowerCase();
+  const category = p_category.value.trim();
+  const unit = p_unit.value.trim();
+
+  // VALIDATION
+  if (!name || !category || !unit) {
+    Swal.fire("Missing!", "All fields are required.", "warning");
+    return;
+  }
+
+  startLoad();
+
+  // DUPLICATE CHECK
+  if (await duplicateProductCheck(name, category, unit, id)) {
+    stopLoad();
+    Swal.fire("Duplicate!", "This product already exists.", "error");
+    return;
+  }
+
+  const data = {
+    name,
+    category,
+    unit
+  };
+
+  if(id) await updateDoc(doc(db,"products",id), data);
+  else   await addDoc(productCol, data);
+
+  // CLEAR FORM
+  productId.value = "";
+  p_name.value = "";
+  p_category.value = "";
+  p_unit.value = "";
+
+  stopLoad();
+  loadProducts();
+
+  Swal.fire("Saved!", "Product saved successfully!", "success");
+});
+
+loadProducts();
+</script>
+
+</body>
+</html>

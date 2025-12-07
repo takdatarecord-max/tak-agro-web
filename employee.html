@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Employee Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 16px;
+    background: #f3f4f6;
+    font-family: Arial, sans-serif;
+    color: #111827;
+  }
+
+  .wrapper {
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  /* Header */
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .page-header-icon { font-size: 26px; }
+  .page-title { font-size: 22px; font-weight: 700; }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: none;
+    background: #e5e7eb;
+    cursor: pointer;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .back-btn:hover { background: #d1d5db; }
+
+  /* Card */
+  .card {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  /* Form */
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: block;
+    color: #374151;
+  }
+
+  input[type="text"], input[type="email"] {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+  }
+
+  input:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px 16px;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: #2563eb;
+    color: white;
+  }
+  .btn-danger {
+    background:#dc2626;
+    color:white;
+  }
+  .btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 999px;
+  }
+
+  /* Spinner */
+  .spinner {
+    border: 3px solid #e5e7eb;
+    border-top: 3px solid #2563eb;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
+  #loadingIcon {
+    display: none;
+    margin-left: 10px;
+    font-size: 13px;
+  }
+
+  /* ⭐ FULL BORDER TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    border: 1px solid #d1d5db;
+  }
+  th, td {
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    white-space: nowrap;
+  }
+  thead { background: #f9fafb; }
+  tr:hover td { background: #f3f4f6; }
+
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-icon">👤</div>
+    <div class="page-title">Employee Management</div>
+  </div>
+
+  <button class="back-btn" onclick="window.location.href='index.html'">⬅ Back</button>
+
+  <!-- Add Employee -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Add / Edit Employee</div>
+    </div>
+
+    <input type="hidden" id="empId">
+
+    <div class="form-row">
+      <div>
+        <label>Name</label>
+        <input type="text" id="empName" placeholder="Employee name">
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="email" id="empEmail" placeholder="example@mail.com">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>
+        <label>Phone</label>
+        <input type="text" id="empPhone" placeholder="Phone number">
+      </div>
+      <div>
+        <label>Address</label>
+        <input type="text" id="empAddress" placeholder="Address">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="saveBtn">💾 Save</button>
+    <span id="loadingIcon"><span class="spinner"></span> Saving...</span>
+  </div>
+
+  <!-- Employee List -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Employee List</div>
+    </div>
+
+    <div style="overflow-x:auto; width:100%;">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase Script -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs,
+  updateDoc, deleteDoc, doc, where, query
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
+  authDomain: "tak-agro.firebaseapp.com",
+  projectId: "tak-agro",
+  storageBucket: "tak-agro.firebasestorage.app",
+  messagingSenderId: "153802937772",
+  appId: "1:153802937772:web:abca377434d940d0b5ac69"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const empCol = collection(db,"employees");
+
+const saveBtn = document.getElementById("saveBtn");
+const loadingIcon = document.getElementById("loadingIcon");
+const tableBody = document.getElementById("tableBody");
+
+function startLoad(){ loadingIcon.style.display="inline-flex"; saveBtn.disabled = true; }
+function stopLoad(){ loadingIcon.style.display="none"; saveBtn.disabled = false; }
+
+/* Duplicate Check */
+async function duplicateCheck(email, phone, exclude=null){
+  const q1 = query(empCol, where("email","==",email));
+  const q2 = query(empCol, where("phone","==",phone));
+  let dup = false;
+
+  const s1 = await getDocs(q1);
+  s1.forEach(d=>{ if(d.id !== exclude) dup=true; });
+
+  const s2 = await getDocs(q2);
+  s2.forEach(d=>{ if(d.id !== exclude) dup=true; });
+
+  return dup;
+}
+
+/* Load Employees */
+async function loadEmployees(){
+  tableBody.innerHTML = "";
+  const snap = await getDocs(empCol);
+
+  snap.forEach(docSnap=>{
+    const d = docSnap.data();
+
+    tableBody.innerHTML += `
+      <tr>
+        <td>${d.name}</td>
+        <td>${d.email}</td>
+        <td>${d.phone}</td>
+        <td>${d.address}</td>
+        <td>
+          <button class="btn-sm"
+            onclick="editEmployee('${docSnap.id}','${d.name}','${d.email}','${d.phone}','${d.address}')">Edit</button>
+          <button class="btn-danger btn-sm"
+            onclick="deleteEmployee('${docSnap.id}')">Delete</button>
+        </td>
+      </tr>`;
+  });
+}
+
+/* ⭐ MODERN EDIT POPUP */
+window.editEmployee = async function(id, name, email, phone, address){
+
+  const { value: formValues } = await Swal.fire({
+    title: "Edit Employee",
+    html: `
+      <input id="sw_name" class="swal2-input" placeholder="Name" value="${name}">
+      <input id="sw_email" class="swal2-input" placeholder="Email" value="${email}">
+      <input id="sw_phone" class="swal2-input" placeholder="Phone" value="${phone}">
+      <input id="sw_address" class="swal2-input" placeholder="Address" value="${address}">
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: "💾 Save",
+    preConfirm: () => {
+      return {
+        name: document.getElementById("sw_name").value.trim(),
+        email: document.getElementById("sw_email").value.trim(),
+        phone: document.getElementById("sw_phone").value.trim(),
+        address: document.getElementById("sw_address").value.trim(),
+      };
+    }
+  });
+
+  if (!formValues) return;
+
+  await updateDoc(doc(db,"employees",id), formValues);
+  Swal.fire("Updated!", "Employee updated successfully.", "success");
+  loadEmployees();
+};
+
+/* Delete */
+window.deleteEmployee = async function(id){
+  const res = await Swal.fire({
+    title: "Delete Employee?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes"
+  });
+
+  if(!res.isConfirmed) return;
+
+  await deleteDoc(doc(db,"employees",id));
+  loadEmployees();
+  Swal.fire("Deleted!", "", "success");
+};
+
+/* Save */
+saveBtn.addEventListener("click", async ()=>{
+  const id = empId.value;
+
+  const data = {
+    name: empName.value.trim(),
+    email: empEmail.value.trim(),
+    phone: empPhone.value.trim(),
+    address: empAddress.value.trim()
+  };
+
+  if(!data.name || !data.phone){
+    Swal.fire("Missing!", "Name & Phone required", "warning");
+    return;
+  }
+
+  startLoad();
+
+  if(await duplicateCheck(data.email,data.phone,id)){
+    stopLoad();
+    Swal.fire("Duplicate!", "Email or Phone already exists.", "error");
+    return;
+  }
+
+  if(id) await updateDoc(doc(db,"employees",id), data);
+  else   await addDoc(empCol, data);
+
+  empId.value = "";
+  stopLoad();
+  loadEmployees();
+
+  Swal.fire("Saved!", "Employee saved successfully!", "success");
+});
+
+loadEmployees();
+</script>
+
+</body>
+</html>

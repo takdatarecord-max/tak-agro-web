@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tak Agro - Data Entry</title>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      padding: 15px;
+      margin: 0;
+    }
+    h2 { margin-top: 0; }
+
+    .card {
+      background: #ffffff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 6px;
+      border: 1px solid #d1d5db;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #e5e7eb;
+      font-weight: 600;
+    }
+
+    button {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .btn-primary   { background:#2563eb; color:#fff; }
+    .btn-danger    { background:#dc2626; color:#fff; }
+    .btn-secondary { background:#6b7280; color:#fff; }
+
+    .btn-small {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    /* Small action buttons (same style as buyer page) */
+    .btn-action-blue {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-action-blue:hover { background: #1d4ed8; }
+
+    .btn-action-red {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-action-red:hover { background: #b91c1c; }
+  </style>
+</head>
+
+<body>
+
+<h2>🧾 Tak Agro – Data Entry</h2>
+
+<a href="index.html">
+  <button class="btn-secondary" style="margin-bottom:10px;">⬅ Back to Dashboard</button>
+</a>
+
+<!-- TOP SECTION -->
+<div class="card">
+  <label>Date</label>
+  <input type="date" id="entryDate">
+
+  <label>Employee</label>
+  <select id="employeeSelect">
+    <option value="">Select Employee</option>
+  </select>
+
+  <label>Buyer</label>
+  <select id="buyerSelect">
+    <option value="">Select Buyer</option>
+  </select>
+</div>
+
+<!-- ADD PRODUCT BUTTON -->
+<div class="card">
+  <button class="btn-primary" id="addProductBtn">+ Add Product</button>
+</div>
+
+<!-- PRODUCT ENTRY FORM -->
+<div class="card" id="productForm" style="display:none;">
+  <label>Product</label>
+  <select id="productSelect">
+    <option value="">Select Product</option>
+  </select>
+
+  <label>Qty (NUG)</label>
+  <input type="number" id="qtyInput" value="0">
+
+  <label>Weight Per Unit (kg)</label>
+  <input type="number" id="weightInput" value="0">
+
+  <label>Total Weight (kg)</label>
+  <input type="number" id="totalWeightInput" readonly>
+
+  <label>Rate (₹ per kg)</label>
+  <input type="number" id="rateInput" value="0">
+
+  <label>Amount (₹)</label>
+  <input type="number" id="amountInput" readonly>
+
+  <button class="btn-primary" id="saveItemBtn">Save Item</button>
+</div>
+
+<!-- ITEMS TABLE -->
+<div class="card">
+  <h3>Items</h3>
+
+  <!-- Scroll area -->
+  <div style="
+      max-height: 260px;
+      overflow-y: auto;
+      overflow-x: auto;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      margin-bottom: 12px;
+  ">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>W/Unit</th>
+          <th>Total W</th>
+          <th>Rate</th>
+          <th>Amount</th>
+          <th style="text-align:center;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="itemsTableBody"></tbody>
+    </table>
+  </div>
+
+  <h3>Total: ₹ <span id="billTotal">0</span></h3>
+  <button class="btn-primary" id="saveBillBtn">Save Bill</button>
+</div>
+
+<!-- RECENT BILLS -->
+<div class="card">
+  <h3>Recent Bills</h3>
+
+  <!-- Scroll wrapper for recent bills -->
+  <div style="
+      max-height: 300px;
+      overflow-y: auto;
+      overflow-x: auto;
+      border:1px solid #d1d5db;
+      border-radius:6px;
+  ">
+    <table style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th>Bill No</th>
+          <th>Date</th>
+          <th>Buyer</th>
+          <th>Total (₹)</th>
+          <th>PDF</th>
+          <th>Edit</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody id="entriesList"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- FIREBASE + LOGIC -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs,
+  doc, deleteDoc, updateDoc, getDoc,
+  serverTimestamp, query, orderBy, limit
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
+  authDomain: "tak-agro.firebaseapp.com",
+  projectId: "tak-agro",
+  storageBucket: "tak-agro.firebasestorage.app",
+  messagingSenderId: "153802937772",
+  appId: "1:153802937772:web:abca377434d940d0b5ac69"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const employeesCol = collection(db, "employees");
+const buyersCol    = collection(db, "buyers");
+const productsCol  = collection(db, "products");
+const entriesCol   = collection(db, "entries");
+
+const entryDate      = document.getElementById("entryDate");
+const employeeSelect = document.getElementById("employeeSelect");
+const buyerSelect    = document.getElementById("buyerSelect");
+const productSelect  = document.getElementById("productSelect");
+
+const addProductBtn  = document.getElementById("addProductBtn");
+const productForm    = document.getElementById("productForm");
+
+const qtyInput       = document.getElementById("qtyInput");
+const weightInput    = document.getElementById("weightInput");
+const totalWeightInput = document.getElementById("totalWeightInput");
+const rateInput      = document.getElementById("rateInput");
+const amountInput    = document.getElementById("amountInput");
+
+const saveItemBtn    = document.getElementById("saveItemBtn");
+const itemsTableBody = document.getElementById("itemsTableBody");
+const billTotalSpan  = document.getElementById("billTotal");
+const saveBillBtn    = document.getElementById("saveBillBtn");
+const entriesList    = document.getElementById("entriesList");
+
+let currentItems   = [];
+let employees      = {};
+let buyers         = {};
+let products       = {};
+let editingBillId  = null;
+let editingBillNo  = null;
+
+// Set today's date
+entryDate.valueAsNumber =
+  Date.now() - new Date().getTimezoneOffset()*60000;
+
+// Auto calculations
+function recalc() {
+  const qty   = Number(qtyInput.value || 0);
+  const w     = Number(weightInput.value || 0);
+  const rate  = Number(rateInput.value || 0);
+  const tW    = qty * w;
+  const amt   = tW * rate;
+  totalWeightInput.value = tW.toFixed(2);
+  amountInput.value      = amt.toFixed(2);
+}
+qtyInput.oninput    = recalc;
+weightInput.oninput = recalc;
+rateInput.oninput   = recalc;
+
+// Toggle product form
+addProductBtn.onclick = () => {
+  productForm.style.display =
+    productForm.style.display === "none" ? "block" : "none";
+};
+
+// Save single item
+saveItemBtn.onclick = () => {
+  const pid = productSelect.value;
+  if (!pid) return Swal.fire("Select product");
+
+  const qty  = Number(qtyInput.value || 0);
+  const wt   = Number(weightInput.value || 0);
+  const rate = Number(rateInput.value || 0);
+
+  if (qty <= 0 || wt <= 0 || rate <= 0) {
+    return Swal.fire("Error", "Qty, weight, rate sahi daalo", "error");
+  }
+
+  const totalW = qty * wt;
+  const amount = totalW * rate;
+
+  currentItems.push({
+    productId: pid,
+    productName: products[pid],
+    qty,
+    wtPerUnit: wt,
+    totalWeight: totalW,
+    rate,
+    amount
+  });
+
+  renderItems();
+
+  qtyInput.value        = "0";
+  weightInput.value     = "0";
+  rateInput.value       = "0";
+  totalWeightInput.value= "";
+  amountInput.value     = "";
+  productForm.style.display = "none";
+};
+
+// Render items table
+function renderItems() {
+  itemsTableBody.innerHTML = "";
+  let total = 0;
+
+  currentItems.forEach((item, i) => {
+    total += item.amount;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${item.productName}</td>
+      <td>${item.qty}</td>
+      <td>${item.wtPerUnit}</td>
+      <td>${item.totalWeight.toFixed(2)}</td>
+      <td>${item.rate}</td>
+      <td>${item.amount.toFixed(2)}</td>
+      <td style="text-align:center;">
+        <button class="btn-action-blue" onclick="editItem(${i})">Edit</button>
+        <button class="btn-action-red" onclick="deleteItem(${i})">Del</button>
+      </td>
+    `;
+    itemsTableBody.appendChild(tr);
+  });
+
+  billTotalSpan.textContent = total.toFixed(2);
+}
+
+// Edit item (popup with product name)
+window.editItem = async (index) => {
+  const it = currentItems[index];
+
+  const { value: updated } = await Swal.fire({
+    title: `Edit Item – ${it.productName}`,
+    html: `
+      <label style="font-size:12px; font-weight:600; text-align:left; display:block;">Qty</label>
+      <input id="sw_qty" class="swal2-input" type="number" value="${it.qty}">
+      <label style="font-size:12px; font-weight:600; text-align:left; display:block;">Weight Per Unit (kg)</label>
+      <input id="sw_wt" class="swal2-input" type="number" value="${it.wtPerUnit}">
+      <label style="font-size:12px; font-weight:600; text-align:left; display:block;">Rate (₹ per kg)</label>
+      <input id="sw_rate" class="swal2-input" type="number" value="${it.rate}">
+    `,
+    confirmButtonText: "Save",
+    showCancelButton: true,
+    preConfirm: () => {
+      return {
+        qty: Number(document.getElementById("sw_qty").value),
+        wt: Number(document.getElementById("sw_wt").value),
+        rate: Number(document.getElementById("sw_rate").value)
+      };
+    }
+  });
+
+  if (!updated) return;
+
+  const totalW = updated.qty * updated.wt;
+  const amount = totalW * updated.rate;
+
+  currentItems[index].qty         = updated.qty;
+  currentItems[index].wtPerUnit   = updated.wt;
+  currentItems[index].totalWeight = totalW;
+  currentItems[index].rate        = updated.rate;
+  currentItems[index].amount      = amount;
+
+  renderItems();
+};
+
+// Delete item
+window.deleteItem = (index) => {
+  currentItems.splice(index, 1);
+  renderItems();
+};
+
+// Load master data
+async function loadMasterData() {
+  const [empSnap, buyerSnap, prodSnap] = await Promise.all([
+    getDocs(employeesCol),
+    getDocs(buyersCol),
+    getDocs(productsCol)
+  ]);
+
+  empSnap.forEach(d => {
+    employees[d.id] = d.data().name;
+    const opt = document.createElement("option");
+    opt.value = d.id;
+    opt.textContent = d.data().name;
+    employeeSelect.appendChild(opt);
+  });
+
+  buyerSnap.forEach(d => {
+    buyers[d.id] = d.data().name;
+    const opt = document.createElement("option");
+    opt.value = d.id;
+    opt.textContent = d.data().name;
+    buyerSelect.appendChild(opt);
+  });
+
+  prodSnap.forEach(d => {
+    products[d.id] = d.data().name;
+    const opt = document.createElement("option");
+    opt.value = d.id;
+    opt.textContent = d.data().name;
+    productSelect.appendChild(opt);
+  });
+}
+
+// Next bill no
+async function getNextBillNo() {
+  const qLast = query(entriesCol, orderBy("billNo","desc"), limit(1));
+  const snap  = await getDocs(qLast);
+  if (snap.empty) return "0001";
+  let last = Number(snap.docs[0].data().billNo || 0);
+  return String(last + 1).padStart(4,"0");
+}
+
+// Save bill
+saveBillBtn.onclick = async () => {
+  if (!entryDate.value)      return Swal.fire("Select date");
+  if (!employeeSelect.value) return Swal.fire("Select employee");
+  if (!buyerSelect.value)    return Swal.fire("Select buyer");
+  if (!currentItems.length)  return Swal.fire("Add at least 1 item");
+
+  const totalAmount = Number(billTotalSpan.textContent || 0);
+  const dataCommon = {
+    date: entryDate.value,
+    employeeId: employeeSelect.value,
+    buyerId: buyerSelect.value,
+    items: currentItems,
+    totalAmount,
+    updatedAt: serverTimestamp()
+  };
+
+  try {
+    if (editingBillId) {
+      await updateDoc(doc(db,"entries",editingBillId), {
+        ...dataCommon,
+        billNo: editingBillNo
+      });
+      Swal.fire("Updated","Bill updated successfully","success");
+    } else {
+      const billNo = await getNextBillNo();
+      await addDoc(entriesCol, {
+        ...dataCommon,
+        billNo,
+        createdAt: serverTimestamp()
+      });
+      Swal.fire("Saved","Bill saved successfully","success");
+    }
+
+    editingBillId = null;
+    editingBillNo = null;
+    saveBillBtn.textContent = "Save Bill";
+    currentItems = [];
+    renderItems();
+    await loadBills();
+
+  } catch (e) {
+    console.error(e);
+    Swal.fire("Error","Error while saving bill","error");
+  }
+};
+
+// Load bills
+async function loadBills() {
+  const qBills = query(entriesCol, orderBy("createdAt","desc"), limit(20));
+  const snap   = await getDocs(qBills);
+  entriesList.innerHTML = "";
+
+  if (snap.empty) {
+    entriesList.innerHTML =
+      "<tr><td colspan='7' style='text-align:center;padding:10px;'>No bills found.</td></tr>";
+    return;
+  }
+
+  snap.forEach(d => {
+    const b  = d.data();
+    const id = d.id;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${b.billNo}</td>
+      <td>${b.date}</td>
+      <td>${buyers[b.buyerId]}</td>
+      <td>₹${(b.totalAmount || 0).toFixed(2)}</td>
+      <td><button class="btn-secondary btn-small" onclick="downloadPdfBill('${id}')">PDF</button></td>
+      <td><button class="btn-action-blue" onclick="editBill('${id}')">Edit</button></td>
+      <td><button class="btn-action-red" onclick="deleteBill('${id}')">Delete</button></td>
+    `;
+    entriesList.appendChild(tr);
+  });
+}
+
+// Delete bill
+window.deleteBill = async (id) => {
+  if (!confirm("Delete this bill permanently?")) return;
+
+  await deleteDoc(doc(db,"entries",id));
+
+  if (editingBillId === id) {
+    editingBillId = null;
+    editingBillNo = null;
+    saveBillBtn.textContent = "Save Bill";
+    currentItems = [];
+    renderItems();
+  }
+
+  loadBills();
+};
+
+// Edit bill
+window.editBill = async (id) => {
+  const snap = await getDoc(doc(db,"entries",id));
+  if (!snap.exists()) return Swal.fire("Error","Bill not found","error");
+
+  const b = snap.data();
+
+  entryDate.value      = b.date;
+  employeeSelect.value = b.employeeId;
+  buyerSelect.value    = b.buyerId;
+  currentItems         = b.items || [];
+  renderItems();
+
+  editingBillId = id;
+  editingBillNo = b.billNo || null;
+  saveBillBtn.textContent = "Update Bill";
+
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+// Simple PDF (you can upgrade layout later)
+async function createPdfFromData(bill) {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p","mm","a4");
+
+  pdf.setFontSize(16);
+  pdf.text("TAK AGRO", 105, 15, {align:"center"});
+
+  pdf.setFontSize(10);
+  pdf.text(`Bill No: ${bill.billNo}`, 10, 30);
+  pdf.text(`Date: ${bill.date}`, 10, 35);
+  pdf.text(`Buyer: ${buyers[bill.buyerId]}`, 10, 40);
+
+  let y = 50;
+  pdf.text("Items:", 10, y);
+  y += 8;
+
+  (bill.items || []).forEach(it => {
+    pdf.text(
+      `${it.productName} | Qty: ${it.qty} | Wt: ${it.totalWeight} | Amt: ₹${it.amount}`,
+      10,
+      y
+    );
+    y += 6;
+  });
+
+  y += 4;
+  pdf.text(`Total Amount: ₹${bill.totalAmount}`, 10, y);
+
+  pdf.save(`TakAgro_Bill_${bill.billNo}.pdf`);
+}
+
+window.downloadPdfBill = async (id) => {
+  const snap = await getDoc(doc(db,"entries",id));
+  if (!snap.exists()) return Swal.fire("Error","Bill not found","error");
+  await createPdfFromData(snap.data());
+};
+
+// INIT
+(async () => {
+  await loadMasterData();
+  await loadBills();
+})();
+</script>
+
+</body>
+</html>

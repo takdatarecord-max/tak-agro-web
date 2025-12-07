@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Employee Income - Tak Agro</title>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    body {
+        font-family: Arial;
+        background: #f3f4f6;
+        padding: 15px;
+        margin: 0;
+    }
+
+    .card {
+        background: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+    }
+
+    label {
+        font-weight: 600;
+        margin-top: 10px;
+        display: block;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        margin-top: 5px;
+        font-size: 14px;
+    }
+
+    /* TABLE SCROLL BOX */
+    .table-scroll {
+        max-height: 260px;
+        overflow-y: auto;
+        overflow-x: auto;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        margin-top: 10px;
+        background: white;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        min-width: 600px;
+    }
+
+    th, td {
+        padding: 8px;
+        border: 1px solid #d1d5db;
+        white-space: nowrap;
+    }
+
+    th {
+        background: #f1f1f1;
+        font-weight: 600;
+    }
+
+    button {
+        padding: 8px 15px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 12px;
+    }
+
+    .btn-primary { background:#2563eb; color:white; }
+    .btn-secondary { background:#6b7280; color:white; }
+    .btn-danger { background:#dc2626; color:white; }
+
+    /* Buyer style action buttons */
+    .btn-edit {
+        background:#2563eb;
+        padding:4px 10px;
+        font-size:12px;
+        color:white;
+        border-radius:6px;
+        border:none;
+        cursor:pointer;
+    }
+    .btn-edit:hover { background:#1d4ed8; }
+
+    .btn-del {
+        background:#dc2626;
+        padding:4px 10px;
+        font-size:12px;
+        color:white;
+        border-radius:6px;
+        border:none;
+        cursor:pointer;
+    }
+    .btn-del:hover { background:#b91c1c; }
+
+    /* Mobile Friendly Popup */
+    .swal-mobile {
+        max-width: 380px !important;
+        width: 90% !important;
+        border-radius: 12px !important;
+    }
+    .swal2-input {
+        margin: 8px 0 !important;
+    }
+</style>
+</head>
+
+<body>
+
+<h2>Employee Income Entry</h2>
+
+<a href="index.html">
+    <button class="btn-secondary">⬅ Back</button>
+</a>
+
+<div class="card">
+    <label>Date</label>
+    <input type="date" id="dateInput" />
+
+    <label>Employee</label>
+    <select id="employeeSelect">
+        <option value="">Select Employee</option>
+    </select>
+
+    <label>Description</label>
+    <input type="text" id="descInput" placeholder="Work detail..." />
+
+    <label>Amount (₹)</label>
+    <input type="number" id="amountInput" placeholder="Amount" />
+
+    <button id="addBtn" class="btn-primary" onclick="addIncome()">Add Entry</button>
+</div>
+
+<div class="card">
+    <h3>Income Records</h3>
+
+    <!-- Scrollable Table -->
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Employee</th>
+                    <th>Description</th>
+                    <th>Amount (₹)</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody id="incomeBody"></tbody>
+        </table>
+    </div>
+
+    <h3>Total Amount: ₹ <span id="totalAmt">0</span></h3>
+</div>
+
+<script type="module">
+
+/* ---------------- FIREBASE ---------------- */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs,
+  deleteDoc, doc, updateDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
+    authDomain: "tak-agro.firebaseapp.com",
+    projectId: "tak-agro",
+    storageBucket: "tak-agro.firebasestorage.app",
+    messagingSenderId: "153802937772",
+    appId: "1:153802937772:web:abca377434d940d0b5ac69"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const employeesCol = collection(db, "employees");
+const incomeCol    = collection(db, "employee_income");
+
+/* DOM */
+const dateInput      = document.getElementById("dateInput");
+const employeeSelect = document.getElementById("employeeSelect");
+const descInput      = document.getElementById("descInput");
+const amountInput    = document.getElementById("amountInput");
+const incomeBody     = document.getElementById("incomeBody");
+const totalAmtSpan   = document.getElementById("totalAmt");
+const addBtn         = document.getElementById("addBtn");
+
+/* STATE */
+let employeesMap = {};
+let editingId = null;
+
+dateInput.valueAsNumber = Date.now() - new Date().getTimezoneOffset()*60000;
+
+/* ---------------- LOAD EMPLOYEES ---------------- */
+
+async function loadEmployees() {
+    const snap = await getDocs(employeesCol);
+    snap.forEach(emp => {
+        employeesMap[emp.id] = emp.data().name;
+
+        let opt = document.createElement("option");
+        opt.value = emp.id;
+        opt.textContent = emp.data().name;
+
+        employeeSelect.appendChild(opt);
+    });
+}
+loadEmployees();
+
+/* ---------------- ADD / UPDATE ENTRY ---------------- */
+
+window.addIncome = async function () {
+
+    let date = dateInput.value;
+    let emp  = employeeSelect.value;
+    let desc = descInput.value.trim();
+    let amt  = Number(amountInput.value);
+
+    if (!date || !emp || !desc || amt <= 0) {
+        return Swal.fire("Missing!", "Please fill all fields correctly", "warning");
+    }
+
+    addBtn.disabled = true;
+    addBtn.textContent = editingId ? "Updating..." : "Saving...";
+
+    try {
+        if (editingId) {
+            await updateDoc(doc(db, "employee_income", editingId), {
+                date, employeeId: emp, description: desc, amount: amt
+            });
+
+            Swal.fire("Updated!", "Income updated successfully", "success");
+        } 
+        else {
+            await addDoc(incomeCol, {
+                date, employeeId: emp, description: desc, amount: amt
+            });
+
+            Swal.fire("Saved!", "Income entry added", "success");
+        }
+
+        clearForm();
+        loadIncome();
+
+    } catch(err) {
+        Swal.fire("Error!", err.message, "error");
+    }
+
+    addBtn.disabled = false;
+    addBtn.textContent = "Add Entry";
+}
+
+/* ---------------- CLEAR FORM ---------------- */
+
+function clearForm() {
+    editingId = null;
+    dateInput.value = "";
+    employeeSelect.value = "";
+    descInput.value = "";
+    amountInput.value = "";
+    addBtn.textContent = "Add Entry";
+}
+
+/* ---------------- LOAD INCOME TABLE ---------------- */
+
+async function loadIncome() {
+    const incomeSnap = await getDocs(incomeCol);
+
+    incomeBody.innerHTML = "";
+    let total = 0;
+
+    incomeSnap.forEach(item => {
+        const d = item.data();
+        total += d.amount;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${d.date}</td>
+            <td>${employeesMap[d.employeeId] || "Unknown"}</td>
+            <td>${d.description}</td>
+            <td>₹${d.amount}</td>
+
+            <td><button class="btn-edit" onclick="editIncome('${item.id}')">Edit</button></td>
+            <td><button class="btn-del" onclick="delIncome('${item.id}')">Delete</button></td>
+        `;
+        incomeBody.appendChild(tr);
+    });
+
+    totalAmtSpan.textContent = total;
+}
+loadIncome();
+
+/* ---------------- EDIT ENTRY (Mobile-friendly Popup + Employee Select) ---------------- */
+
+window.editIncome = async function(id) {
+    const snap = await getDoc(doc(db, "employee_income", id));
+    if (!snap.exists()) return;
+
+    const d = snap.data();
+
+    /* BUILD EMPLOYEE SELECT DROPDOWN */
+    let empOptions = "";
+    for (let empId in employeesMap) {
+        let selected = empId === d.employeeId ? "selected" : "";
+        empOptions += `<option value="${empId}" ${selected}>${employeesMap[empId]}</option>`;
+    }
+
+    const { value: vals } = await Swal.fire({
+        title: "Edit Income",
+        width: "90%",
+        customClass: { popup: "swal-mobile" },
+        html: `
+            <div style="text-align:left; max-height:65vh; overflow-y:auto; padding:5px;">
+                
+                <label style="font-size:14px;font-weight:600;">Employee</label>
+                <select id="sw_emp" class="swal2-input" style="width:100%;">
+                    ${empOptions}
+                </select>
+
+                <label style="font-size:14px;font-weight:600;">Date</label>
+                <input id="sw_date" type="date" class="swal2-input" value="${d.date}" style="width:100%;">
+
+                <label style="font-size:14px;font-weight:600;">Description</label>
+                <input id="sw_desc" class="swal2-input" value="${d.description}" style="width:100%;">
+
+                <label style="font-size:14px;font-weight:600;">Amount (₹)</label>
+                <input id="sw_amt" type="number" class="swal2-input" value="${d.amount}" style="width:100%;">
+            </div>
+        `,
+        confirmButtonText: "Save",
+        showCancelButton: true,
+        preConfirm: () => ({
+                employeeId: document.getElementById("sw_emp").value,
+                date: document.getElementById("sw_date").value,
+                description: document.getElementById("sw_desc").value.trim(),
+                amount: Number(document.getElementById("sw_amt").value)
+        })
+    });
+
+    if (!vals) return;
+
+    await updateDoc(doc(db, "employee_income", id), vals);
+
+    Swal.fire("Updated!", "Income updated successfully", "success");
+    loadIncome();
+};
+
+/* ---------------- DELETE ENTRY ---------------- */
+
+window.delIncome = async function(id) {
+    const ok = await Swal.fire({
+        title: "Delete Entry?",
+        text: "This action cannot be undone!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#dc2626",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Delete"
+    });
+
+    if (!ok.isConfirmed) return;
+
+    await deleteDoc(doc(db, "employee_income", id));
+
+    Swal.fire("Deleted!", "Entry removed", "success");
+    loadIncome();
+};
+</script>
+
+</body>
+</html>
