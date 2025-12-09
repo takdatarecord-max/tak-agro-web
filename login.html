@@ -69,7 +69,6 @@ button:hover { background: #1e40af; }
 
   <button onclick="loginUser()">Login</button>
 
-  <!-- FORGET PASSWORD BUTTON -->
   <span class="forgot" onclick="forgotPassword()">Forgot Password?</span>
 </div>
 
@@ -80,7 +79,11 @@ import {
   getAuth, signInWithEmailAndPassword, sendPasswordResetEmail 
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-/* YOUR WORKING FIREBASE CONFIG */
+import {
+  getFirestore, doc, setDoc
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+/* FIREBASE CONFIG (same everywhere) */
 const firebaseConfig = {
   apiKey: "AIzaSyApcn2ckkvfLaEuKEKOZfC6hcEfx44ZDJ0",
   authDomain: "tak-agro.firebaseapp.com",
@@ -90,10 +93,13 @@ const firebaseConfig = {
   appId: "1:158309293772:web:ebca377434d940d0b5ac69"
 };
 
-const app = initializeApp(firebaseConfig);
+const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db   = getFirestore(app);
 
-/* ---------------- LOGIN FUNCTION ---------------- */
+const OWNER_EMAIL = "bhuraramtak81@gmail.com";
+
+/* ---------------- LOGIN FUNCTION (with single session) ---------------- */
 window.loginUser = async function () {
   const email = document.getElementById("loginEmail").value.trim();
   const pass  = document.getElementById("loginPassword").value.trim();
@@ -103,13 +109,31 @@ window.loginUser = async function () {
   }
 
   try {
-    await signInWithEmailAndPassword(auth, email, pass);
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+
+    // sirf owner ko allow karna (optional, jaise index me)
+    if (cred.user.email !== OWNER_EMAIL) {
+      Swal.fire("Access Denied", "Only owner account allowed.", "error");
+      return;
+    }
+
+    // 🔥 ek unique session ID banayenge
+    const sessionId = Date.now().toString() + "_" + Math.random().toString(36).slice(2);
+
+    // 🔥 Firestore me session save (sessions/owner)
+    await setDoc(doc(db, "sessions", "owner"), {
+      sessionId: sessionId,
+      updatedAt: Date.now()
+    });
+
+    // 🔥 Browser me bhi store
+    localStorage.setItem("ownerSessionId", sessionId);
 
     Swal.fire("Success!", "Login successful!", "success");
 
     setTimeout(() => {
       window.location.href = "index.html";
-    }, 900);
+    }, 700);
 
   } catch (err) {
     Swal.fire("Login Failed", err.message, "error");
