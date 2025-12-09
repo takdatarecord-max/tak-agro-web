@@ -12,208 +12,215 @@
 
   body {
     margin: 0;
-    padding: 16px;
-    background: #f3f4f6;
-    font-family: Arial, sans-serif;
-    color: #111827;
+    padding: 20px;
+    font-family: "Poppins", sans-serif;
+    color: #0f172a;
+    min-height: 100vh;
+    background: radial-gradient(circle at top left, #93c5fd 0, #dbeafe 40%, #f1f5f9 80%);
   }
 
-  .wrapper {
-    max-width: 1200px;
-    margin: auto;
+  body::before,
+  body::after {
+    content:"";
+    position:fixed;
+    width:240px;
+    height:240px;
+    border-radius:999px;
+    filter:blur(60px);
+    opacity:0.45;
+    z-index:-1;
   }
+  body::before { top:-60px; left:-40px; background:#60a5fa; }
+  body::after { bottom:-70px; right:-30px; background:#f472b6; }
 
-  /* Header */
+  .wrapper { max-width:1050px; margin:auto; }
+
+  /* HEADER */
   .page-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+    padding:10px 0;
   }
-  .page-header-icon { font-size: 26px; }
-  .page-title { font-size: 22px; font-weight: 700; }
+  .page-header-icon { font-size:28px; }
+  .page-title { font-size:22px; font-weight:700; }
 
   .back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: none;
-    background: #e5e7eb;
-    cursor: pointer;
-    font-size: 13px;
-    margin-bottom: 12px;
+    padding:8px 18px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.6);
+    border:1px solid rgba(148,163,184,0.4);
+    cursor:pointer;
+    font-size:13px;
+    margin-bottom:14px;
   }
-  .back-btn:hover { background: #d1d5db; }
 
-  /* Card */
+  /* GLASS CARD */
   .card {
-    background: #ffffff;
-    padding: 16px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148,163,184,0.45);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
   }
 
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
+  .card-title { font-size:17px; font-weight:600; margin-bottom:10px; }
 
-  .card-title {
-    font-size: 16px;
-    font-weight: 600;
-  }
-
-  /* Form */
-  label {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    display: block;
-    color: #374151;
-  }
-
-  input[type="text"], input[type="email"] {
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-    font-size: 14px;
-  }
-
-  input:focus {
-    border-color: #2563eb;
-    outline: none;
-    box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
-  }
-
+  /* FORM */
   .form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px 16px;
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .form-row > div {
+    flex:1;
+    min-width:240px;
+    max-width:320px;
   }
 
-  /* Buttons */
-  .btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    font-size: 14px;
-    cursor: pointer;
+  input {
+    width:100%;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(148,163,184,0.6);
+    background:rgba(255,255,255,0.7);
+    font-size:14px;
   }
 
-  .btn-primary {
-    background: #2563eb;
-    color: white;
+  /* SAVE BUTTON + LOADING ICON */
+  #saveBtn {
+    margin-top:10px;
+    padding:10px 18px;
+    font-size:15px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#2563eb,#38bdf8);
+    color:white;
+    border:none;
+    cursor:pointer;
   }
-  .btn-danger {
+
+  #loadingIcon {
+    display:none;
+    margin-top:10px;
+    font-size:14px;
+    color:#2563eb;
+  }
+
+  .spinner {
+    width:18px;
+    height:18px;
+    border:3px solid #e5e7eb;
+    border-top:3px solid #2563eb;
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin { 100% { transform:rotate(360deg); } }
+
+  /* TABLE CENTER ALIGN */
+  table {
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.55);
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(148,163,184,0.45);
+    border-radius:12px;
+    overflow:hidden;
+    text-align:center;
+  }
+
+  th, td {
+    padding:10px;
+    border-bottom:1px solid rgba(148,163,184,0.35);
+    text-align:center;
+  }
+
+  thead { background:rgba(255,255,255,0.75); font-weight:600; }
+  tr:hover td { background:rgba(255,255,255,0.8); }
+
+  .btn-sm {
+    padding:5px 12px;
+    font-size:12px;
+    border-radius:999px;
+    border:none;
+    cursor:pointer;
+  }
+
+  .edit-btn {
+    background:#3b82f6;
+    color:white;
+  }
+  .delete-btn {
     background:#dc2626;
     color:white;
   }
-  .btn-sm {
-    padding: 4px 10px;
-    font-size: 12px;
-    border-radius: 999px;
-  }
 
-  /* Spinner */
-  .spinner {
-    border: 3px solid #e5e7eb;
-    border-top: 3px solid #2563eb;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    animation: spin 0.7s linear infinite;
+  /* SWEETALERT SAME THEME */
+  .swal2-popup {
+    background:rgba(255,255,255,0.65) !important;
+    backdrop-filter:blur(14px) !important;
+    border-radius:18px !important;
+    border:1px solid rgba(148,163,184,0.45) !important;
   }
-  @keyframes spin { 100% { transform: rotate(360deg); } }
-
-  #loadingIcon {
-    display: none;
-    margin-left: 10px;
-    font-size: 13px;
-  }
-
-  /* ⭐ FULL BORDER TABLE */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    border: 1px solid #d1d5db;
-  }
-  th, td {
-    padding: 8px;
-    border: 1px solid #d1d5db;
-    white-space: nowrap;
-  }
-  thead { background: #f9fafb; }
-  tr:hover td { background: #f3f4f6; }
-
 </style>
 </head>
 
 <body>
 <div class="wrapper">
 
-  <!-- Header -->
   <div class="page-header">
     <div class="page-header-icon">👤</div>
     <div class="page-title">Employee Management</div>
   </div>
 
-  <button class="back-btn" onclick="window.location.href='index.html'">⬅ Back</button>
+  <button class="back-btn" onclick="location.href='index.html'">⬅ Back</button>
 
-  <!-- Add Employee -->
+  <!-- ADD EMPLOYEE -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">Add / Edit Employee</div>
-    </div>
+    <div class="card-title">Add / Edit Employee</div>
 
     <input type="hidden" id="empId">
 
     <div class="form-row">
       <div>
         <label>Name</label>
-        <input type="text" id="empName" placeholder="Employee name">
+        <input type="text" id="empName">
       </div>
+
       <div>
         <label>Email</label>
-        <input type="email" id="empEmail" placeholder="example@mail.com">
+        <input type="email" id="empEmail">
       </div>
     </div>
 
     <div class="form-row">
       <div>
         <label>Phone</label>
-        <input type="text" id="empPhone" placeholder="Phone number">
+        <input type="text" id="empPhone">
       </div>
+
       <div>
         <label>Address</label>
-        <input type="text" id="empAddress" placeholder="Address">
+        <input type="text" id="empAddress">
       </div>
     </div>
 
-    <button class="btn btn-primary" id="saveBtn">💾 Save</button>
-    <span id="loadingIcon"><span class="spinner"></span> Saving...</span>
+    <button class="btn-primary" id="saveBtn">💾 Save</button>
+    <div id="loadingIcon"><span class="spinner"></span> Saving...</div>
   </div>
 
-  <!-- Employee List -->
+  <!-- EMPLOYEE LIST -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">Employee List</div>
-    </div>
+    <div class="card-title">Employee List</div>
 
-    <div style="overflow-x:auto; width:100%;">
+    <div style="overflow-x:auto;">
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Action</th>
+            <th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Action</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -223,55 +230,33 @@
 
 </div>
 
-<!-- Firebase Script -->
-<script type="module">
 
+<!-- FIREBASE LOGIC -->
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs,
-  updateDoc, deleteDoc, doc, where, query
+  updateDoc, deleteDoc, doc, query, where
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
-  authDomain: "tak-agro.firebaseapp.com",
-  projectId: "tak-agro",
-  storageBucket: "tak-agro.firebasestorage.app",
-  messagingSenderId: "153802937772",
-  appId: "1:153802937772:web:abca377434d940d0b5ac69"
-};
+const app = initializeApp({
+  apiKey:"AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
+  authDomain:"tak-agro.firebaseapp.com",
+  projectId:"tak-agro",
+  storageBucket:"tak-agro.firebasestorage.app",
+  messagingSenderId:"153802937772",
+  appId:"1:153802937772:web:abca377434d940d0b5ac69"
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const empCol = collection(db,"employees");
 
-const saveBtn = document.getElementById("saveBtn");
-const loadingIcon = document.getElementById("loadingIcon");
-const tableBody = document.getElementById("tableBody");
-
-function startLoad(){ loadingIcon.style.display="inline-flex"; saveBtn.disabled = true; }
-function stopLoad(){ loadingIcon.style.display="none"; saveBtn.disabled = false; }
-
-/* Duplicate Check */
-async function duplicateCheck(email, phone, exclude=null){
-  const q1 = query(empCol, where("email","==",email));
-  const q2 = query(empCol, where("phone","==",phone));
-  let dup = false;
-
-  const s1 = await getDocs(q1);
-  s1.forEach(d=>{ if(d.id !== exclude) dup=true; });
-
-  const s2 = await getDocs(q2);
-  s2.forEach(d=>{ if(d.id !== exclude) dup=true; });
-
-  return dup;
-}
-
-/* Load Employees */
+/* LOAD TABLE */
 async function loadEmployees(){
+  const tableBody = document.getElementById("tableBody");
   tableBody.innerHTML = "";
-  const snap = await getDocs(empCol);
 
+  const snap = await getDocs(empCol);
   snap.forEach(docSnap=>{
     const d = docSnap.data();
 
@@ -282,94 +267,148 @@ async function loadEmployees(){
         <td>${d.phone}</td>
         <td>${d.address}</td>
         <td>
-          <button class="btn-sm"
+          <button class="btn-sm edit-btn"
             onclick="editEmployee('${docSnap.id}','${d.name}','${d.email}','${d.phone}','${d.address}')">Edit</button>
-          <button class="btn-danger btn-sm"
+
+          <button class="btn-sm delete-btn"
             onclick="deleteEmployee('${docSnap.id}')">Delete</button>
         </td>
       </tr>`;
   });
 }
 
-/* ⭐ MODERN EDIT POPUP */
-window.editEmployee = async function(id, name, email, phone, address){
+/* DUPLICATE CHECK (EMAIL + PHONE) */
+async function isDuplicate(email, phone, excludeId = null){
+  let q1 = query(empCol, where("email","==",email));
+  let q2 = query(empCol, where("phone","==",phone));
 
-  const { value: formValues } = await Swal.fire({
-    title: "Edit Employee",
-    html: `
-      <input id="sw_name" class="swal2-input" placeholder="Name" value="${name}">
-      <input id="sw_email" class="swal2-input" placeholder="Email" value="${email}">
-      <input id="sw_phone" class="swal2-input" placeholder="Phone" value="${phone}">
-      <input id="sw_address" class="swal2-input" placeholder="Address" value="${address}">
+  let snap1 = await getDocs(q1);
+  let snap2 = await getDocs(q2);
+
+  let dup = false;
+
+  snap1.forEach(d => { if(d.id !== excludeId) dup = true; });
+  snap2.forEach(d => { if(d.id !== excludeId) dup = true; });
+
+  return dup;
+}
+
+/* EDIT EMPLOYEE (WITH VALIDATION) */
+window.editEmployee = async function(id, name, email, phone, address){
+  const { value: data } = await Swal.fire({
+    title:"Edit Employee",
+    html:`
+      <label style="font-weight:700;font-size:13px;">Name</label>
+      <input id="n1" class="swal2-input" value="${name}">
+
+      <label style="font-weight:700;font-size:13px;">Email</label>
+      <input id="n2" class="swal2-input" value="${email}">
+
+      <label style="font-weight:700;font-size:13px;">Phone</label>
+      <input id="n3" class="swal2-input" value="${phone}">
+
+      <label style="font-weight:700;font-size:13px;">Address</label>
+      <input id="n4" class="swal2-input" value="${address}">
     `,
-    focusConfirm: false,
-    showCancelButton: true,
-    confirmButtonText: "💾 Save",
-    preConfirm: () => {
-      return {
-        name: document.getElementById("sw_name").value.trim(),
-        email: document.getElementById("sw_email").value.trim(),
-        phone: document.getElementById("sw_phone").value.trim(),
-        address: document.getElementById("sw_address").value.trim(),
-      };
+    showCancelButton:true,
+    confirmButtonText:"Save",
+    preConfirm:()=>{
+      const nm = document.getElementById("n1").value.trim();
+      const em = document.getElementById("n2").value.trim();
+      const ph = document.getElementById("n3").value.trim();
+      const ad = document.getElementById("n4").value.trim();
+
+      if(!nm){
+        Swal.showValidationMessage("Name is required");
+        return false;
+      }
+
+      if(!em){
+        Swal.showValidationMessage("Email is required");
+        return false;
+      }
+
+      if(!/^\S+@\S+\.\S+$/.test(em)){
+        Swal.showValidationMessage("Invalid email format");
+        return false;
+      }
+
+      if(!/^[0-9]{10}$/.test(ph)){
+        Swal.showValidationMessage("Phone must be exactly 10 digits");
+        return false;
+      }
+
+      return { name:nm, email:em, phone:ph, address:ad };
     }
   });
 
-  if (!formValues) return;
+  if(!data) return;
 
-  await updateDoc(doc(db,"employees",id), formValues);
-  Swal.fire("Updated!", "Employee updated successfully.", "success");
+  await updateDoc(doc(db,"employees",id), data);
+  Swal.fire("Updated!","Employee updated.","success");
   loadEmployees();
 };
 
-/* Delete */
+/* DELETE */
 window.deleteEmployee = async function(id){
   const res = await Swal.fire({
-    title: "Delete Employee?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes"
+    title:"Delete Employee?",
+    icon:"warning",
+    showCancelButton:true,
+    confirmButtonText:"Delete"
   });
 
   if(!res.isConfirmed) return;
 
   await deleteDoc(doc(db,"employees",id));
+  Swal.fire("Deleted!","","success");
   loadEmployees();
-  Swal.fire("Deleted!", "", "success");
 };
 
-/* Save */
-saveBtn.addEventListener("click", async ()=>{
-  const id = empId.value;
+/* SAVE (WITH DUPLICATE CHECK + LOADING + AUTO CLEAR + VALIDATION) */
+document.getElementById("saveBtn").addEventListener("click", async ()=>{
 
-  const data = {
-    name: empName.value.trim(),
-    email: empEmail.value.trim(),
-    phone: empPhone.value.trim(),
-    address: empAddress.value.trim()
-  };
+  const name = empName.value.trim();
+  const email = empEmail.value.trim();
+  const phone = empPhone.value.trim();
+  const address = empAddress.value.trim();
 
-  if(!data.name || !data.phone){
-    Swal.fire("Missing!", "Name & Phone required", "warning");
+  if(!name || !phone || !email){
+    Swal.fire("Missing!", "Name, Email & Phone are required.", "warning");
     return;
   }
 
-  startLoad();
-
-  if(await duplicateCheck(data.email,data.phone,id)){
-    stopLoad();
-    Swal.fire("Duplicate!", "Email or Phone already exists.", "error");
+  if(!/^\S+@\S+\.\S+$/.test(email)){
+    Swal.fire("Invalid Email!", "Please enter a valid email.", "error");
     return;
   }
 
-  if(id) await updateDoc(doc(db,"employees",id), data);
-  else   await addDoc(empCol, data);
+  if(!/^[0-9]{10}$/.test(phone)){
+    Swal.fire("Invalid Phone!", "Phone must be exactly 10 digits.", "error");
+    return;
+  }
 
-  empId.value = "";
-  stopLoad();
+  if(await isDuplicate(email, phone, null)){
+    Swal.fire("Duplicate!", "Email or Phone already exists!", "error");
+    return;
+  }
+
+  saveBtn.style.display="none";
+  loadingIcon.style.display="block";
+
+  await addDoc(empCol,{ name,email,phone,address });
+
+  saveBtn.style.display="block";
+  loadingIcon.style.display="none";
+
+  Swal.fire("Saved!","Employee added successfully!","success");
+
+  empName.value="";
+  empEmail.value="";
+  empPhone.value="";
+  empAddress.value="";
+
   loadEmployees();
-
-  Swal.fire("Saved!", "Employee saved successfully!", "success");
 });
 
 loadEmployees();
