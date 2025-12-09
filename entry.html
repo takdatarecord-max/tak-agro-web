@@ -77,7 +77,7 @@
       border-radius: 6px;
     }
 
-    /* Small action buttons (same style as buyer page) */
+    /* Small action buttons */
     .btn-action-blue {
       background: #2563eb;
       color: white;
@@ -99,6 +99,38 @@
       cursor: pointer;
     }
     .btn-action-red:hover { background: #b91c1c; }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.25);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .loading-box {
+      background: #ffffff;
+      padding: 16px 22px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 3px solid #e5e7eb;
+      border-top-color: #2563eb;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
@@ -138,7 +170,8 @@
     <option value="">Select Product</option>
   </select>
 
-  <label>Qty (NUG)</label>
+  <!-- NUG -> Qty (UI label change) -->
+  <label>Qty</label>
   <input type="number" id="qtyInput" value="0">
 
   <label>Weight Per Unit (kg)</label>
@@ -219,6 +252,14 @@
   </div>
 </div>
 
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <span id="loadingText">Please wait…</span>
+  </div>
+</div>
+
 <!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -268,12 +309,29 @@ const billTotalSpan  = document.getElementById("billTotal");
 const saveBillBtn    = document.getElementById("saveBillBtn");
 const entriesList    = document.getElementById("entriesList");
 
+const loadingOverlay = document.getElementById("loadingOverlay");
+const loadingTextEl  = document.getElementById("loadingText");
+
 let currentItems   = [];
 let employees      = {};
 let buyers         = {};
 let products       = {};
 let editingBillId  = null;
 let editingBillNo  = null;
+
+// 🔹 YOUR LOGO (white background, PNG) as Base64 data URL
+// 1. Jaake online "image to base64" converter me apna logo PNG upload karo
+// 2. "data:image/png;base64,...." wala pura string yahan paste kar do.
+const LOGO_BASE64 = "";  // <--- yahan apna base64 logo daal sakte ho
+
+// ---------- Helper: Loading overlay ----------
+function showLoading(msg = "Please wait…") {
+  loadingTextEl.textContent = msg;
+  loadingOverlay.style.display = "flex";
+}
+function hideLoading() {
+  loadingOverlay.style.display = "none";
+}
 
 // Set today's date
 entryDate.valueAsNumber =
@@ -449,7 +507,7 @@ async function getNextBillNo() {
   return String(last + 1).padStart(4,"0");
 }
 
-// Save bill
+// Save bill (with loading + button disable)
 saveBillBtn.onclick = async () => {
   if (!entryDate.value)      return Swal.fire("Select date");
   if (!employeeSelect.value) return Swal.fire("Select employee");
@@ -465,6 +523,9 @@ saveBillBtn.onclick = async () => {
     totalAmount,
     updatedAt: serverTimestamp()
   };
+
+  showLoading("Saving bill…");
+  saveBillBtn.disabled = true;
 
   try {
     if (editingBillId) {
@@ -493,6 +554,9 @@ saveBillBtn.onclick = async () => {
   } catch (e) {
     console.error(e);
     Swal.fire("Error","Error while saving bill","error");
+  } finally {
+    hideLoading();
+    saveBillBtn.disabled = false;
   }
 };
 
@@ -563,36 +627,132 @@ window.editBill = async (id) => {
   window.scrollTo({top:0, behavior:"smooth"});
 };
 
-// Simple PDF (you can upgrade layout later)
+// ---------- PDF (invoice layout like screenshot) ----------
 async function createPdfFromData(bill) {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p","mm","a4");
 
-  pdf.setFontSize(16);
-  pdf.text("TAK AGRO", 105, 15, {align:"center"});
+  const pageWidth  = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 10;
+
+  // Outer border
+  pdf.rect(margin, 20, pageWidth - margin*2, pageHeight - 30);
+
+  // Header with logo
+  let headerY = 28;
+
+  if (LOGO_BASE64) {
+    const logoWidth = 25;
+    const logoHeight = 25;
+    const xLogo = pageWidth/2 - logoWidth/2;
+    pdf.addImage(LOGO_BASE64, "PNG", xLogo, headerY, logoWidth, logoHeight);
+    headerY += 30;
+  }
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  pdf.text("TAK AGRO", pageWidth/2, headerY, {align:"center"});
 
   pdf.setFontSize(10);
-  pdf.text(`Bill No: ${bill.billNo}`, 10, 30);
-  pdf.text(`Date: ${bill.date}`, 10, 35);
-  pdf.text(`Buyer: ${buyers[bill.buyerId]}`, 10, 40);
+  pdf.setFont("helvetica", "normal");
+  pdf.text("Tak Krishi Farm", pageWidth/2, headerY + 5, {align:"center"});
+  pdf.text("Jugat Singh Nagar, Balarwa", pageWidth/2, headerY + 10, {align:"center"});
+  pdf.text("Mob: 7877630845", pageWidth/2, headerY + 15, {align:"center"});
 
-  let y = 50;
-  pdf.text("Items:", 10, y);
-  y += 8;
+  // Buyer / Employee / Bill info row
+  let infoTop = headerY + 25;
+  const leftX  = margin + 2;
+  const rightX = pageWidth - margin - 2;
+
+  pdf.setFont("helvetica", "bold");
+pdf.setFontSize(10);
+
+// Left column text
+pdf.text("BUYER :", leftX, infoTop);
+pdf.text("EMPLOYEE :", leftX, infoTop + 6);
+
+// Right column labels (more spacing so no overlap)
+const rightLabelX = pageWidth - margin - 40;
+const rightValueX = pageWidth - margin - 5;
+
+pdf.text("BILL NO :", rightLabelX, infoTop);
+pdf.text("DATE :", rightLabelX, infoTop + 6);
+
+// Values
+pdf.setFont("helvetica", "normal");
+pdf.text(buyers[bill.buyerId] || "", leftX + 22, infoTop);
+pdf.text(employees[bill.employeeId] || "", leftX + 30, infoTop + 6);
+
+pdf.text(String(bill.billNo || ""), rightValueX, infoTop, {align: "right"});
+pdf.text(String(bill.date || ""), rightValueX, infoTop + 6, {align: "right"});
+  // Items table header
+  let tableTop = infoTop + 14;
+
+  const colItem   = margin + 2;
+  const colQty    = colItem + 70;
+  const colWeight = colQty + 25;
+  const colRate   = colWeight + 30;
+  const colAmount = colRate + 25;
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(10);
+  pdf.line(margin, tableTop - 6, pageWidth - margin, tableTop - 6);
+
+  pdf.text("ITEM",   colItem,   tableTop);
+  pdf.text("QTY",    colQty,    tableTop);
+  pdf.text("WEIGHT", colWeight, tableTop);
+  pdf.text("RATE",   colRate,   tableTop);
+  pdf.text("AMOUNT", colAmount, tableTop);
+
+  pdf.line(margin, tableTop + 2, pageWidth - margin, tableTop + 2);
+
+  // Items rows
+  pdf.setFont("helvetica", "normal");
+  let y = tableTop + 8;
+  let totalQty = 0;
+  let totalWeight = 0;
 
   (bill.items || []).forEach(it => {
-    pdf.text(
-      `${it.productName} | Qty: ${it.qty} | Wt: ${it.totalWeight} | Amt: ₹${it.amount}`,
-      10,
-      y
-    );
+    if (y > pageHeight - 40) {
+      pdf.addPage();
+      y = margin + 10;
+    }
+    pdf.text(String(it.productName || ""), colItem, y);
+    pdf.text(String(it.qty || 0), colQty, y);
+    pdf.text((it.totalWeight || 0).toFixed(2), colWeight, y, {align:"left"});
+    pdf.text((it.rate || 0).toFixed(2), colRate, y, {align:"left"});
+    pdf.text("₹" + (it.amount || 0).toFixed(2), colAmount, y, {align:"left"});
+
+    totalQty += it.qty || 0;
+    totalWeight += it.totalWeight || 0;
     y += 6;
   });
 
-  y += 4;
-  pdf.text(`Total Amount: ₹${bill.totalAmount}`, 10, y);
+  pdf.line(margin, y + 2, pageWidth - margin, y + 2);
 
-  pdf.save(`TakAgro_Bill_${bill.billNo}.pdf`);
+  
+  // Totals section (bottom left)
+  let totalsY = y + 10;
+  pdf.setFont("helvetica", "bold");
+  pdf.text("Total Qty :", margin + 2, totalsY);
+  pdf.text(String(totalQty), margin + 35, totalsY);
+
+  pdf.text("Total Weight:", margin + 2, totalsY + 6);
+  pdf.text(totalWeight.toFixed(2) + " kg", margin + 35, totalsY + 6);
+
+  pdf.text("NET AMOUNT :", margin + 2, totalsY + 14);
+  pdf.text("₹" + (bill.totalAmount || 0).toFixed(2), margin + 40, totalsY + 14);
+
+  // Thank you line (bottom center)
+  pdf.setFontSize(9);
+  pdf.setFont("helvetica", "normal");
+  pdf.text("*** Thank you for doing business with Tak Agro ***",
+           pageWidth / 2,
+           pageHeight - 15,
+           {align:"center"});
+
+  pdf.save(`TakAgro_Invoice_${bill.billNo || ""}.pdf`);
 }
 
 window.downloadPdfBill = async (id) => {
