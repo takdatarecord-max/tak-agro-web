@@ -16,14 +16,16 @@
     }
     .wrapper {
       max-width: 1100px;
-      margin: auto;
+      margin: 0 auto;
       padding: 15px;
     }
 
-    h1, h3 { margin-bottom: 10px; }
+    h1, h3 {
+      margin: 0 0 10px;
+    }
 
     .card {
-      background: white;
+      background: #ffffff;
       padding: 15px;
       border-radius: 10px;
       margin-bottom: 15px;
@@ -42,6 +44,7 @@
       border-radius: 6px;
       border: 1px solid #d1d5db;
       font-size: 14px;
+      background: #ffffff;
     }
 
     .row {
@@ -57,6 +60,7 @@
       font-size: 14px;
       cursor: pointer;
     }
+
     .btn-primary   { background:#2563eb; color:white; }
     .btn-secondary { background:#6b7280; color:white; }
     .btn-small     { padding:5px 10px; font-size:12px; }
@@ -83,9 +87,13 @@
       padding: 6px;
       border: 1px solid #e5e7eb;
       white-space: nowrap;
+      text-align: left;
     }
 
-    th { background:#e5e7eb; }
+    th {
+      background:#e5e7eb;
+      font-weight: 600;
+    }
 
     /* Modal */
     .modal-backdrop {
@@ -105,6 +113,7 @@
       border-radius: 10px;
       max-height: 80vh;
       overflow-y: auto;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.25);
     }
     .modal-close {
       float: right;
@@ -125,6 +134,7 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
+      gap: 10px;
     }
   </style>
 </head>
@@ -134,7 +144,9 @@
 
   <h1>Tak Agro – Report (Invoice / Income / Expenditure)</h1>
 
-  <a href="index.html"><button class="btn-secondary">⬅ Back to Dashboard</button></a>
+  <a href="index.html">
+    <button class="btn-secondary">⬅ Back to Dashboard</button>
+  </a>
 
   <!-- FILTERS -->
   <div class="card">
@@ -150,15 +162,21 @@
       </div>
       <div>
         <label>Employee</label>
-        <select id="filterEmployee"><option value="">All Employees</option></select>
+        <select id="filterEmployee">
+          <option value="">All Employees</option>
+        </select>
       </div>
       <div>
         <label>Buyer</label>
-        <select id="filterBuyer"><option value="">All Buyers</option></select>
+        <select id="filterBuyer">
+          <option value="">All Buyers</option>
+        </select>
       </div>
       <div>
         <label>Product</label>
-        <select id="filterProduct"><option value="">All Products</option></select>
+        <select id="filterProduct">
+          <option value="">All Products</option>
+        </select>
       </div>
     </div>
 
@@ -182,7 +200,6 @@
       <h3>Invoice Report <span class="badge" id="invoiceCountBadge">0 records</span></h3>
       <button class="btn-primary btn-small" id="invoicePdfBtn">Download PDF</button>
     </div>
-
     <div class="table-box">
       <table>
         <thead>
@@ -206,7 +223,6 @@
       <h3>Income Report <span class="badge" id="incomeCountBadge">0 records</span></h3>
       <button class="btn-primary btn-small" id="incomePdfBtn">Download PDF</button>
     </div>
-
     <div class="table-box">
       <table>
         <thead>
@@ -229,7 +245,6 @@
       <h3>Expenditure Report <span class="badge" id="expenseCountBadge">0 records</span></h3>
       <button class="btn-primary btn-small" id="expensePdfBtn">Download PDF</button>
     </div>
-
     <div class="table-box">
       <table>
         <thead>
@@ -257,212 +272,668 @@
   </div>
 </div>
 
-<!-- jsPDF -->
+<!-- jsPDF UMD -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 <script type="module">
-/* Firebase Imports */
+/* ---------------------- FIREBASE IMPORT ---------------------- */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-/* Firebase Init */
-const app = initializeApp({
+/* ---------------------- FIREBASE CONFIG ---------------------- */
+const firebaseConfig = {
   apiKey: "AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
   authDomain: "tak-agro.firebaseapp.com",
-  projectId: "tak-agro",
-});
-const db = getFirestore(app);
+  projectId: "tak-agro"
+};
 
-/* DOM Shortcuts */
-const fromDateInput = fromDate;
-const toDateInput = toDate;
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
 
-const invoiceBody = invoiceTableBody;
-const incomeBody  = incomeTableBody;
-const expenseBody = expenseTableBody;
+/* ---------------------- DOM ELEMENTS ---------------------- */
+const fromDateInput   = document.getElementById("fromDate");
+const toDateInput     = document.getElementById("toDate");
+const filterEmpSelect = document.getElementById("filterEmployee");
+const filterBuyerSelect   = document.getElementById("filterBuyer");
+const filterProductSelect = document.getElementById("filterProduct");
+
+const invoiceBody = document.getElementById("invoiceTableBody");
+const incomeBody  = document.getElementById("incomeTableBody");
+const expenseBody = document.getElementById("expenseTableBody");
 
 const invoiceCountBadge = document.getElementById("invoiceCountBadge");
 const incomeCountBadge  = document.getElementById("incomeCountBadge");
 const expenseCountBadge = document.getElementById("expenseCountBadge");
 
-let employees={}, buyers={}, products={};
-let invoiceData=[], incomeData=[], expenseData=[];
+const sumInvoiceSpan = document.getElementById("sumInvoiceAmount");
+const sumIncomeSpan  = document.getElementById("sumIncome");
+const sumExpenseSpan = document.getElementById("sumExpense");
+const sumNetSpan     = document.getElementById("sumNet");
 
-/* Load Master Data */
-async function loadMasters(){
-  const empSnap = await getDocs(collection(db,"employees"));
-  empSnap.forEach(d=>{
-    employees[d.id]=d.data().name;
-    filterEmployee.innerHTML+=`<option value="${d.id}">${d.data().name}</option>`;
+const modalBackdrop = document.getElementById("modalBackdrop");
+const modalTitle    = document.getElementById("modalTitle");
+const modalContent  = document.getElementById("modalContent");
+
+/* ---------------------- DATA STORAGE ---------------------- */
+let employees = {};
+let buyers    = {};
+let products  = {};
+
+let invoiceData  = [];
+let incomeData   = [];
+let expenseData  = [];
+
+/* ---------------------- DEFAULT DATES ---------------------- */
+const today  = new Date();
+const yyyy   = today.getFullYear();
+const mm     = ("0" + (today.getMonth() + 1)).slice(-2);
+const dd     = ("0" + today.getDate()).slice(-2);
+
+fromDateInput.value = `${yyyy}-${mm}-01`;
+toDateInput.value   = `${yyyy}-${mm}-${dd}`;
+
+/* ---------------------- LOAD MASTER DATA ---------------------- */
+async function loadMasters() {
+  const empSnap   = await getDocs(collection(db, "employees"));
+  const buyerSnap = await getDocs(collection(db, "buyers"));
+  const prodSnap  = await getDocs(collection(db, "products"));
+
+  empSnap.forEach(d => {
+    employees[d.id] = d.data().name;
+    filterEmpSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
   });
 
-  const buySnap = await getDocs(collection(db,"buyers"));
-  buySnap.forEach(d=>{
-    buyers[d.id]=d.data().name;
-    filterBuyer.innerHTML+=`<option value="${d.id}">${d.data().name}</option>`;
+  buyerSnap.forEach(d => {
+    buyers[d.id] = d.data().name;
+    filterBuyerSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
   });
 
-  const prodSnap = await getDocs(collection(db,"products"));
-  prodSnap.forEach(d=>{
-    products[d.id]=d.data().name;
-    filterProduct.innerHTML+=`<option value="${d.id}">${d.data().name}</option>`;
+  prodSnap.forEach(d => {
+    products[d.id] = d.data().name;
+    filterProductSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
   });
 }
 
-/* Main Report Generator */
-async function generateReport(){
-  Swal.fire({title:"Loading...",allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
-
+/* ---------------------- GENERATE REPORT DATA ---------------------- */
+async function generateReport() {
   const from = fromDateInput.value;
   const to   = toDateInput.value;
 
-  const entrySnap  = await getDocs(collection(db,"entries"));
-  const incomeSnap = await getDocs(collection(db,"employee_income"));
-  const expSnap    = await getDocs(collection(db,"employee_expenditures"));
+  if (!from || !to) {
+    Swal.fire("Missing Date", "Please select From & To date", "warning");
+    return;
+  }
 
-  const emp = filterEmployee.value;
-  const buy = filterBuyer.value;
-  const pro = filterProduct.value;
+  Swal.fire({
+    title: "Loading...",
+    text: "Fetching report data...",
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
 
+  const entrySnap   = await getDocs(collection(db, "entries"));
+  const incomeSnap  = await getDocs(collection(db, "employee_income"));
+  const expenseSnap = await getDocs(collection(db, "employee_expenditures"));
+
+  const empFilter   = filterEmpSelect.value;
+  const buyerFilter = filterBuyerSelect.value;
+  const prodFilter  = filterProductSelect.value;
+
+  /* --- Invoice Data --- */
   invoiceData = [];
-  entrySnap.forEach(d=>{
-    const x=d.data();
-    if(x.date < from || x.date > to) return;
-    if(emp && x.employeeId != emp) return;
-    if(buy && x.buyerId != buy) return;
-    if(pro){
-      if(!(x.items||[]).some(i=>i.productId==pro)) return;
+  entrySnap.forEach(d => {
+    const x = d.data();
+    const dt = x.date || "";
+    if (dt < from || dt > to) return;
+
+    if (empFilter && x.employeeId !== empFilter) return;
+    if (buyerFilter && x.buyerId !== buyerFilter) return;
+
+    if (prodFilter) {
+      const hasProd = (x.items || []).some(it => it.productId === prodFilter);
+      if (!hasProd) return;
     }
-    invoiceData.push({id:d.id,...x});
+
+    invoiceData.push({ id: d.id, ...x });
   });
 
-  incomeData=[];
-  incomeSnap.forEach(d=>{
-    const x=d.data();
-    if(x.date<from || x.date>to) return;
-    if(emp && x.employeeId!=emp) return;
-    incomeData.push({id:d.id,...x});
+  /* --- Income Data --- */
+  incomeData = [];
+  incomeSnap.forEach(d => {
+    const x = d.data();
+    const dt = x.date || "";
+    if (dt < from || dt > to) return;
+    if (empFilter && x.employeeId !== empFilter) return;
+    incomeData.push({ id: d.id, ...x });
   });
 
-  expenseData=[];
-  expSnap.forEach(d=>{
-    const x=d.data();
-    if(x.date<from || x.date>to) return;
-    if(emp && x.employeeId!=emp) return;
-    expenseData.push({id:d.id,...x});
+  /* --- Expense Data --- */
+  expenseData = [];
+  expenseSnap.forEach(d => {
+    const x = d.data();
+    const dt = x.date || "";
+    if (dt < from || dt > to) return;
+    if (empFilter && x.employeeId !== empFilter) return;
+    expenseData.push({ id: d.id, ...x });
   });
 
   renderTables();
   Swal.close();
 }
 
-/* Render Tables */
-function renderTables(){
-  /* INVOICE */
-  invoiceBody.innerHTML="";
-  let invTotal=0;
-  invoiceData.forEach(inv=>{
-    invTotal+=Number(inv.totalAmount||0);
-    invoiceBody.innerHTML+=`
-      <tr>
-        <td>${inv.billNo}</td>
-        <td>${inv.date}</td>
-        <td>${employees[inv.employeeId]||"-"}</td>
-        <td>${buyers[inv.buyerId]||"-"}</td>
-        <td>₹${inv.totalAmount}</td>
-        <td><button class="btn-small btn-secondary" onclick="viewInvoice('${inv.id}')">View</button></td>
-      </tr>`;
-  });
-  invoiceCountBadge.textContent=`${invoiceData.length} records`;
+/* ---------------------- RENDER TABLES ---------------------- */
+function renderTables() {
+  /* Invoice table */
+  invoiceBody.innerHTML = "";
+  let invTotal = 0;
 
-  /* INCOME */
-  incomeBody.innerHTML="";
-  let incTotal=0;
-  incomeData.forEach(x=>{
-    incTotal+=Number(x.amount||0);
-    incomeBody.innerHTML+=`
-      <tr>
-        <td>${x.date}</td>
-        <td>${employees[x.employeeId]||"-"}</td>
-        <td>${x.description}</td>
-        <td>₹${x.amount}</td>
-        <td><button class="btn-small btn-secondary" onclick="viewIncome('${x.id}')">View</button></td>
-      </tr>`;
+  invoiceData.forEach(inv => {
+    invTotal += Number(inv.totalAmount || 0);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${inv.billNo || "-"}</td>
+      <td>${inv.date || "-"}</td>
+      <td>${employees[inv.employeeId] || "-"}</td>
+      <td>${buyers[inv.buyerId] || "-"}</td>
+      <td>₹${Number(inv.totalAmount || 0).toFixed(2)}</td>
+      <td>
+        <button class="btn-small btn-secondary" onclick="viewInvoice('${inv.id}')">View</button>
+      </td>
+    `;
+    invoiceBody.appendChild(tr);
   });
-  incomeCountBadge.textContent=`${incomeData.length} records`;
 
-  /* EXPENSE */
-  expenseBody.innerHTML="";
-  let expTotal=0;
-  expenseData.forEach(x=>{
-    expTotal+=Number(x.amount||0);
-    expenseBody.innerHTML+=`
-      <tr>
-        <td>${x.date}</td>
-        <td>${employees[x.employeeId]||"-"}</td>
-        <td>${x.description}</td>
-        <td>₹${x.amount}</td>
-        <td><button class="btn-small btn-secondary" onclick="viewExpense('${x.id}')">View</button></td>
-      </tr>`;
+  invoiceCountBadge.textContent = `${invoiceData.length} records`;
+
+  /* Income table */
+  incomeBody.innerHTML = "";
+  let incTotal = 0;
+
+  incomeData.forEach(row => {
+    incTotal += Number(row.amount || 0);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row.date || "-"}</td>
+      <td>${employees[row.employeeId] || "-"}</td>
+      <td>${row.description || "-"}</td>
+      <td>₹${Number(row.amount || 0).toFixed(2)}</td>
+      <td>
+        <button class="btn-small btn-secondary" onclick="viewIncome('${row.id}')">View</button>
+      </td>
+    `;
+    incomeBody.appendChild(tr);
   });
-  expenseCountBadge.textContent=`${expenseData.length} records`;
 
-  /* SUMMARY */
-  sumInvoiceAmount.textContent = invTotal.toFixed(2);
-  sumIncome.textContent = incTotal.toFixed(2);
-  sumExpense.textContent = expTotal.toFixed(2);
-  sumNet.textContent = (invTotal + incTotal - expTotal).toFixed(2);
+  incomeCountBadge.textContent = `${incomeData.length} records`;
+
+  /* Expense table */
+  expenseBody.innerHTML = "";
+  let expTotal = 0;
+
+  expenseData.forEach(row => {
+    expTotal += Number(row.amount || 0);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row.date || "-"}</td>
+      <td>${employees[row.employeeId] || "-"}</td>
+      <td>${row.description || "-"}</td>
+      <td>₹${Number(row.amount || 0).toFixed(2)}</td>
+      <td>
+        <button class="btn-small btn-secondary" onclick="viewExpense('${row.id}')">View</button>
+      </td>
+    `;
+    expenseBody.appendChild(tr);
+  });
+
+  expenseCountBadge.textContent = `${expenseData.length} records`;
+
+  /* Summary */
+  sumInvoiceSpan.textContent = invTotal.toFixed(2);
+  sumIncomeSpan.textContent  = incTotal.toFixed(2);
+  sumExpenseSpan.textContent = expTotal.toFixed(2);
+  sumNetSpan.textContent     = (invTotal + incTotal - expTotal).toFixed(2);
 }
 
-/* Modal Functions */
-window.hideModal=()=>modalBackdrop.style.display="none";
-
-window.viewInvoice=function(id){
-  const x=invoiceData.find(a=>a.id==id);
-  if(!x) return;
-  modalTitle.innerText="Invoice Details";
-  modalContent.innerHTML=`
-    <p><b>Invoice No:</b> ${x.billNo}</p>
-    <p><b>Date:</b> ${x.date}</p>
-    <p><b>Employee:</b> ${employees[x.employeeId]||"-"}</p>
-    <p><b>Buyer:</b> ${buyers[x.buyerId]||"-"}</p>
-    <hr><b>Items:</b><br><br>
-    ${x.items.map(i=>`<div><b>${i.productName}</b> — Qty:${i.qty}, Weight:${i.totalWeight}, Amount:₹${i.amount}</div>`).join("")}
-    <hr><p><b>Total:</b> ₹${x.totalAmount}</p>`;
-  modalBackdrop.style.display="flex";
+/* ---------------------- MODAL FUNCTIONS ---------------------- */
+window.hideModal = () => {
+  modalBackdrop.style.display = "none";
 };
 
-window.viewIncome=function(id){
-  const x=incomeData.find(a=>a.id==id);
-  modalTitle.innerText="Income Details";
-  modalContent.innerHTML=`
-    <p><b>Date:</b> ${x.date}</p>
-    <p><b>Employee:</b> ${employees[x.employeeId]||"-"}</p>
-    <p><b>Description:</b> ${x.description}</p>
-    <p><b>Amount:</b> ₹${x.amount}</p>`;
-  modalBackdrop.style.display="flex";
+window.viewInvoice = function(id) {
+  const inv = invoiceData.find(x => x.id === id);
+  if (!inv) return;
+
+  let itemsHtml = "";
+  (inv.items || []).forEach(it => {
+    itemsHtml += `
+      <div>
+        <b>${it.productName || ""}</b> —
+        Qty: ${it.qty || 0},
+        Wt/Unit: ${it.wtPerUnit || 0},
+        Total Wt: ${it.totalWeight || 0},
+        Rate: ₹${it.rate || 0},
+        Amount: ₹${it.amount || 0}
+      </div>`;
+  });
+
+  modalTitle.innerText = "Invoice Details";
+  modalContent.innerHTML = `
+    <p><b>Invoice No:</b> ${inv.billNo || "-"}</p>
+    <p><b>Date:</b> ${inv.date || "-"}</p>
+    <p><b>Employee:</b> ${employees[inv.employeeId] || "-"}</p>
+    <p><b>Buyer:</b> ${buyers[inv.buyerId] || "-"}</p>
+    <hr>
+    <b>Items:</b><br><br>
+    ${itemsHtml || "<i>No items</i>"}
+    <hr>
+    <p><b>Total:</b> ₹${Number(inv.totalAmount || 0).toFixed(2)}</p>
+  `;
+  modalBackdrop.style.display = "flex";
 };
 
-window.viewExpense=function(id){
-  const x=expenseData.find(a=>a.id==id);
-  modalTitle.innerText="Expenditure Details";
-  modalContent.innerHTML=`
-    <p><b>Date:</b> ${x.date}</p>
-    <p><b>Employee:</b> ${employees[x.employeeId]||"-"}</p>
-    <p><b>Description:</b> ${x.description}</p>
-    <p><b>Amount:</b> ₹${x.amount}</p>`;
-  modalBackdrop.style.display="flex";
+window.viewIncome = function(id) {
+  const row = incomeData.find(x => x.id === id);
+  if (!row) return;
+
+  modalTitle.innerText = "Income Details";
+  modalContent.innerHTML = `
+    <p><b>Date:</b> ${row.date || "-"}</p>
+    <p><b>Employee:</b> ${employees[row.employeeId] || "-"}</p>
+    <p><b>Description:</b> ${row.description || "-"}</p>
+    <p><b>Amount:</b> ₹${Number(row.amount || 0).toFixed(2)}</p>
+  `;
+  modalBackdrop.style.display = "flex";
 };
 
+window.viewExpense = function(id) {
+  const row = expenseData.find(x => x.id === id);
+  if (!row) return;
 
-/* Init */
+  modalTitle.innerText = "Expenditure Details";
+  modalContent.innerHTML = `
+    <p><b>Date:</b> ${row.date || "-"}</p>
+    <p><b>Employee:</b> ${employees[row.employeeId] || "-"}</p>
+    <p><b>Description:</b> ${row.description || "-"}</p>
+    <p><b>Amount:</b> ₹${Number(row.amount || 0).toFixed(2)}</p>
+  `;
+  modalBackdrop.style.display = "flex";
+};
+
+/* ---------------------- PDF HEADER HELPER ---------------------- */
+
+/** 👇 Yaha apna logo Base64 daal sakte ho:
+ *  Example: "data:image/png;base64,AAAA..."
+ */
+const LOGO_BASE64 = ""; // <-- Apna Tak Agro logo yaha paste karo (Base64 data URL)
+
+/**
+ * Common header for all three report PDFs
+ * returns { y, left, right, pageWidth }
+ */
+function drawReportHeader(pdf, title, filterLines) {
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const left  = 10;
+  const right = pageWidth - 10;
+
+  let y = 10;
+
+  // Logo (center top) – only if provided
+  if (LOGO_BASE64) {
+    const logoW = 30;
+    const logoH = 30;
+    const logoX = (pageWidth - logoW) / 2;
+    pdf.addImage(LOGO_BASE64, "PNG", logoX, y, logoW, logoH);
+    y += logoH + 4;
+  }
+
+  // Company Name & Address
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  pdf.text("TAK AGRO", pageWidth / 2, y, { align: "center" });
+  y += 5;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(10);
+  pdf.text("Tak Krishi Farm", pageWidth / 2, y, { align: "center" });
+  y += 4;
+  pdf.text("Jugat Singh Nagar, Balarwa", pageWidth / 2, y, { align: "center" });
+  y += 4;
+  pdf.text("Mob: 7877630845", pageWidth / 2, y, { align: "center" });
+  y += 6;
+
+  // Horizontal line
+  pdf.setLineWidth(0.3);
+  pdf.line(left, y, right, y);
+  y += 6;
+
+  // Report Title
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(12);
+  pdf.text(title, pageWidth / 2, y, { align: "center" });
+  y += 6;
+
+  // Filters
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+
+  filterLines.forEach(line => {
+    if (line) {
+      pdf.text(line, left, y);
+      y += 4;
+    }
+  });
+
+  y += 2;
+  pdf.line(left, y, right, y); // line below filters
+  y += 4;
+
+  return { y, left, right, pageWidth };
+}
+/* ---------------------- INVOICE PDF (ITEM WISE TABLE) ---------------------- */
+function generateInvoicePdf() {
+  if (!invoiceData.length) {
+    Swal.fire("No Data", "No invoice records found.", "info");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  // Filter description
+  const from = fromDateInput.value || "-";
+  const to   = toDateInput.value || "-";
+  const empName   = filterEmpSelect.value   ? (employees[filterEmpSelect.value] || "")   : "";
+  const buyerName = filterBuyerSelect.value ? (buyers[filterBuyerSelect.value] || "")    : "";
+  const prodName  = filterProductSelect.value ? (products[filterProductSelect.value] || "") : "";
+
+  const filterLines = [
+    `Date: ${from} to ${to}`,
+    empName   ? `Employee: ${empName}`   : "",
+    buyerName ? `Buyer: ${buyerName}`    : "",
+    prodName  ? `Product: ${prodName}`   : ""
+  ];
+
+  const header = drawReportHeader(pdf, "INVOICE REPORT", filterLines);
+  let y     = header.y;
+  const left  = header.left;
+  const right = header.right;
+
+  // 🔹 Flatten invoice items: har row = 1 item
+  const flatRows = [];
+  invoiceData.forEach(inv => {
+    (inv.items || []).forEach(it => {
+      flatRows.push({
+        billNo:    inv.billNo || "-",
+        date:      inv.date || "-",
+        employee:  employees[inv.employeeId] || "-",
+        buyer:     buyers[inv.buyerId] || "-",
+        qty:       it.qty || 0,
+        wtPerUnit: it.wtPerUnit || 0,
+        rate:      it.rate || 0,
+        amount:    it.amount || 0
+      });
+    });
+  });
+
+  if (!flatRows.length) {
+    Swal.fire("No Data", "No invoice items found for this filter.", "info");
+    return;
+  }
+
+  // Columns: Bill, Date, Emp, Buyer, Qty, Wt/Unit, Rate, Amount  (sum = 190)
+  const colWidths = [18, 18, 36, 36, 18, 18, 18, 28];
+  const colX = [left];
+  for (let i = 0; i < colWidths.length; i++) {
+    colX.push(colX[i] + colWidths[i]);
+  }
+  const rowHeight = 6;
+
+  function drawHeaderRow() {
+    const rowTop    = y;
+    const rowBottom = y + rowHeight;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+
+    // Borders
+    pdf.line(left, rowTop, right, rowTop);
+    pdf.line(left, rowBottom, right, rowBottom);
+    colX.forEach(x => pdf.line(x, rowTop, x, rowBottom));
+
+    const textY = rowTop + 4;
+    pdf.text("Bill No",      colX[0] + 1, textY);
+    pdf.text("Date",         colX[1] + 1, textY);
+    pdf.text("Employee",     colX[2] + 1, textY);
+    pdf.text("Buyer",        colX[3] + 1, textY);
+    pdf.text("Qty",          colX[4] + 1, textY);
+    pdf.text("Wt/Unit",      colX[5] + 1, textY);
+    pdf.text("Rate",         colX[6] + 1, textY);
+    pdf.text("Amount (₹)",   colX[7] + 1, textY);
+
+    y = rowBottom;
+  }
+
+  function drawDataRow(r) {
+    if (y + rowHeight > 270) {
+      pdf.addPage();
+      const h2 = drawReportHeader(pdf, "INVOICE REPORT", filterLines);
+      y = h2.y;
+      drawHeaderRow();
+    }
+
+    const rowTop    = y;
+    const rowBottom = y + rowHeight;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+
+    // Borders
+    pdf.line(left, rowTop, right, rowTop);
+    pdf.line(left, rowBottom, right, rowBottom);
+    colX.forEach(x => pdf.line(x, rowTop, x, rowBottom));
+
+    const textY = rowTop + 4;
+    pdf.text(String(r.billNo),         colX[0] + 1, textY);
+    pdf.text(String(r.date),           colX[1] + 1, textY);
+    pdf.text(String(r.employee).substring(0, 18), colX[2] + 1, textY);
+    pdf.text(String(r.buyer).substring(0, 18),    colX[3] + 1, textY);
+    pdf.text(String(r.qty),            colX[4] + 1, textY);
+    pdf.text(String(r.wtPerUnit),      colX[5] + 1, textY);
+    pdf.text(String(r.rate),           colX[6] + 1, textY);
+    pdf.text(`₹${Number(r.amount || 0).toFixed(2)}`, colX[7] + 1, textY);
+
+    y = rowBottom;
+  }
+
+  // Header + rows
+  drawHeaderRow();
+  flatRows.forEach(r => drawDataRow(r));
+
+  pdf.save("TakAgro_Invoice_Report.pdf");
+}
+
+/* ---------------------- INCOME PDF ---------------------- */
+function generateIncomePdf() {
+  if (!incomeData.length) {
+    Swal.fire("No Data", "No income records found.", "info");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const from = fromDateInput.value || "-";
+  const to   = toDateInput.value || "-";
+  const empName  = filterEmpSelect.value ? (employees[filterEmpSelect.value] || "") : "";
+
+  const filterLines = [
+    `Date: ${from} to ${to}`,
+    empName ? `Employee: ${empName}` : ""
+  ];
+
+  const header = drawReportHeader(pdf, "INCOME REPORT", filterLines);
+  let y     = header.y;
+  const left  = header.left;
+  const right = header.right;
+
+  // Columns: Date, Employee, Description, Amount
+  const colWidths = [25, 55, 75, 35]; // = 190
+  const colX = [left];
+  for (let i = 0; i < colWidths.length; i++) {
+    colX.push(colX[i] + colWidths[i]);
+  }
+  const rowHeight = 6;
+
+  function drawHeaderRow() {
+    const rowTop = y;
+    const rowBottom = y + rowHeight;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+
+    pdf.line(left, rowTop, right, rowTop);
+    pdf.line(left, rowBottom, right, rowBottom);
+    colX.forEach(x => pdf.line(x, rowTop, x, rowBottom));
+
+    const textY = rowTop + 4;
+    pdf.text("Date",        colX[0] + 1, textY);
+    pdf.text("Employee",    colX[1] + 1, textY);
+    pdf.text("Description", colX[2] + 1, textY);
+    pdf.text("Amount (₹)",  colX[3] + 1, textY);
+
+    y = rowBottom;
+  }
+
+  function drawDataRow(row) {
+    if (y + rowHeight > 270) {
+      pdf.addPage();
+      const h2 = drawReportHeader(pdf, "INCOME REPORT", filterLines);
+      y = h2.y;
+      drawHeaderRow();
+    }
+
+    const rowTop = y;
+    const rowBottom = y + rowHeight;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+
+    pdf.line(left, rowTop, right, rowTop);
+    pdf.line(left, rowBottom, right, rowBottom);
+    colX.forEach(x => pdf.line(x, rowTop, x, rowBottom));
+
+    const textY = rowTop + 4;
+    pdf.text(String(row.date || "-"),                colX[0] + 1, textY);
+    pdf.text(String(employees[row.employeeId] || "-").substring(0, 22), colX[1] + 1, textY);
+    pdf.text(String(row.description || "-").substring(0, 35),           colX[2] + 1, textY);
+    pdf.text(`₹${Number(row.amount || 0).toFixed(2)}`,                  colX[3] + 1, textY);
+
+    y = rowBottom;
+  }
+
+  drawHeaderRow();
+  incomeData.forEach(r => drawDataRow(r));
+
+  pdf.save("TakAgro_Income_Report.pdf");
+}
+
+/* ---------------------- EXPENDITURE PDF ---------------------- */
+function generateExpensePdf() {
+  if (!expenseData.length) {
+    Swal.fire("No Data", "No expenditure records found.", "info");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const from = fromDateInput.value || "-";
+  const to   = toDateInput.value || "-";
+  const empName  = filterEmpSelect.value ? (employees[filterEmpSelect.value] || "") : "";
+
+  const filterLines = [
+    `Date: ${from} to ${to}`,
+    empName ? `Employee: ${empName}` : ""
+  ];
+
+  const header = drawReportHeader(pdf, "EXPENDITURE REPORT", filterLines);
+  let y     = header.y;
+  const left  = header.left;
+  const right = header.right;
+
+  // Same columns as income
+  const colWidths = [25, 55, 75, 35];
+  const colX = [left];
+  for (let i = 0; i < colWidths.length; i++) {
+    colX.push(colX[i] + colWidths[i]);
+  }
+  const rowHeight = 6;
+
+  function drawHeaderRow() {
+    const rowTop = y;
+    const rowBottom = y + rowHeight;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+
+    pdf.line(left, rowTop, right, rowTop);
+    pdf.line(left, rowBottom, right, rowBottom);
+    colX.forEach(x => pdf.line(x, rowTop, x, rowBottom));
+
+    const textY = rowTop + 4;
+    pdf.text("Date",        colX[0] + 1, textY);
+    pdf.text("Employee",    colX[1] + 1, textY);
+    pdf.text("Description", colX[2] + 1, textY);
+    pdf.text("Amount (₹)",  colX[3] + 1, textY);
+
+    y = rowBottom;
+  }
+
+  function drawDataRow(row) {
+    if (y + rowHeight > 270) {
+      pdf.addPage();
+      const h2 = drawReportHeader(pdf, "EXPENDITURE REPORT", filterLines);
+      y = h2.y;
+      drawHeaderRow();
+    }
+
+    const rowTop = y;
+    const rowBottom = y + rowHeight;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+
+    pdf.line(left, rowTop, right, rowTop);
+    pdf.line(left, rowBottom, right, rowBottom);
+    colX.forEach(x => pdf.line(x, rowTop, x, rowBottom));
+
+    const textY = rowTop + 4;
+    pdf.text(String(row.date || "-"),                colX[0] + 1, textY);
+    pdf.text(String(employees[row.employeeId] || "-").substring(0, 22), colX[1] + 1, textY);
+    pdf.text(String(row.description || "-").substring(0, 35),           colX[2] + 1, textY);
+    pdf.text(`₹${Number(row.amount || 0).toFixed(2)}`,                  colX[3] + 1, textY);
+
+    y = rowBottom;
+  }
+
+  drawHeaderRow();
+  expenseData.forEach(r => drawDataRow(r));
+
+  pdf.save("TakAgro_Expenditure_Report.pdf");
+}
+
+/* ---------------------- EVENT LISTENERS ---------------------- */
+document.getElementById("generateBtn").addEventListener("click", generateReport);
+document.getElementById("invoicePdfBtn").addEventListener("click", generateInvoicePdf);
+document.getElementById("incomePdfBtn").addEventListener("click", generateIncomePdf);
+document.getElementById("expensePdfBtn").addEventListener("click", generateExpensePdf);
+
+/* ---------------------- INITIAL LOAD ---------------------- */
 await loadMasters();
 await generateReport();
-
-generateBtn.addEventListener("click", generateReport);
-invoicePdfBtn.addEventListener("click", ()=>Swal.fire("PDF","Invoice PDF under development.","info"));
-incomePdfBtn.addEventListener("click", ()=>Swal.fire("PDF","Income PDF under development.","info"));
-expensePdfBtn.addEventListener("click", ()=>Swal.fire("PDF","Expense PDF under development.","info"));
 
 </script>
 </body>
