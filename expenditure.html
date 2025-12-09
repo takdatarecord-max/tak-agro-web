@@ -2,337 +2,440 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Employee Expenditure - Tak Agro</title>
+<title>Expenditure Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-    body {
-        font-family: Arial;
-        background: #f3f4f6;
-        padding: 15px;
-    }
-    .card {
-        background: white;
-        padding: 15px;
-        margin-bottom: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    label {
-        font-weight: 600;
-        margin-top: 10px;
-        display: block;
-    }
-    input, select {
-        width: 100%;
-        padding: 8px;
-        margin-top: 5px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-    }
+  * { box-sizing: border-box; }
 
-    /* Table Scroll */
-    .table-wrapper {
-        overflow-x: auto;
-        border-radius: 10px;
-    }
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: "Poppins", sans-serif;
+    color: #0f172a;
+    min-height: 100vh;
+    background: radial-gradient(circle at top left, #93c5fd 0, #dbeafe 40%, #f1f5f9 80%);
+  }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        min-width: 650px;
-    }
-    th, td {
-        padding: 8px;
-        border: 1px solid #ccc;
-        white-space: nowrap;
-    }
-    th { background: #e5e7eb; }
+  body::before,
+  body::after {
+    content:"";
+    position:fixed;
+    width:240px;
+    height:240px;
+    border-radius:999px;
+    filter:blur(60px);
+    opacity:0.45;
+    z-index:-1;
+  }
+  body::before { top:-60px; left:-40px; background:#60a5fa; }
+  body::after  { bottom:-70px; right:-30px; background:#f472b6; }
 
-    button {
-        padding: 8px 14px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        cursor: pointer;
-    }
+  .wrapper { max-width:1050px; margin:auto; }
 
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-danger { background: #dc2626; color: white; }
-    .btn-secondary { background: #6b7280; color: white; }
+  /* HEADER */
+  .page-header {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+    padding:10px 0;
+  }
+  .page-header-icon { font-size:28px; }
+  .page-title { font-size:22px; font-weight:700; }
 
-    .btn-small {
-        padding: 5px 10px;
-        font-size: 12px;
-        border-radius: 20px;
-    }
+  .back-btn {
+    padding:8px 18px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.6);
+    border:1px solid rgba(148,163,184,0.4);
+    cursor:pointer;
+    font-size:13px;
+    margin-bottom:14px;
+  }
 
-    /* SweetAlert Mobile Fix */
-    .swal2-popup {
-        width: 90% !important;
-        max-width: 380px !important;
-    }
-    .swal2-input, .swal2-select {
-        margin: 8px 0 !important;
-        font-size: 15px !important;
-    }
+  /* GLASS CARD */
+  .card {
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148,163,184,0.45);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  }
+
+  .card-title { font-size:17px; font-weight:600; margin-bottom:10px; }
+
+  /* FORM ROW */
+  .form-row {
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .form-row > div {
+    flex:1;
+    min-width:220px;
+    max-width:300px;
+  }
+
+  input, select {
+    width:100%;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(148,163,184,0.6);
+    background:rgba(255,255,255,0.7);
+    font-size:14px;
+  }
+
+  /* SAVE + LOADING */
+  #saveBtn {
+    margin-top:10px;
+    padding:10px 18px;
+    font-size:15px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#2563eb,#38bdf8);
+    color:white;
+    border:none;
+    cursor:pointer;
+  }
+
+  #loadingIcon {
+    display:none;
+    margin-top:10px;
+    font-size:14px;
+    color:#2563eb;
+  }
+
+  .spinner {
+    width:18px;
+    height:18px;
+    border:3px solid #e5e7eb;
+    border-top:3px solid #2563eb;
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin { 100% { transform:rotate(360deg); } }
+
+  /* TABLE + SCROLL */
+  .table-container {
+    max-height:300px;
+    overflow-y:auto;
+    border-radius:12px;
+  }
+
+  table {
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.55);
+    border:1px solid rgba(148,163,184,0.45);
+    text-align:center;
+  }
+
+  th, td {
+    padding:10px;
+    border-bottom:1px solid rgba(148,163,184,0.35);
+  }
+
+  thead { background:rgba(255,255,255,0.75); font-weight:600; }
+
+  .btn-sm {
+    padding:6px 14px;
+    font-size:12px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    color:white;
+  }
+  .btn-edit { background:#2563eb; }
+  .btn-del  { background:#dc2626; }
+
+  /* SWEETALERT POPUP (same style as income) */
+  .swal2-popup {
+    border-radius:18px !imp ortant;
+    padding-bottom:20px !important;
+  }
+  .popup-label {
+    font-weight:600;
+    text-align:left;
+    width:90%;
+    margin:5px auto 3px auto;
+    display:block;
+  }
+  .popup-field {
+    width:90%;
+    margin:0 auto 12px auto;
+    display:block;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid #2563eb;
+  }
 </style>
 </head>
 
 <body>
+<div class="wrapper">
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-header-icon">💸</div>
+    <div class="page-title">Expenditure Management</div>
+  </div>
 
-<h2>Employee Expenditure Entry</h2>
+  <button class="back-btn" onclick="location.href='index.html'">⬅ Back</button>
 
-<a href="index.html">
-    <button class="btn-secondary">⬅ Back</button>
-</a>
+  <!-- ADD / EDIT EXPENDITURE -->
+  <div class="card">
+    <div class="card-title">Add / Edit Expenditure</div>
 
-<!-- ENTRY FORM -->
-<div class="card">
-    <label>Date</label>
-    <input type="date" id="dateInput">
+    <div class="form-row">
+      <div>
+        <label>Date</label>
+        <input type="date" id="dateInput">
+      </div>
 
-    <label>Employee</label>
-    <select id="employeeSelect">
-        <option value="">Select Employee</option>
-    </select>
+      <div>
+        <label>Employee</label>
+        <select id="employeeSelect">
+          <option value="">Select Employee</option>
+        </select>
+      </div>
+    </div>
 
-    <label>Description</label>
-    <input type="text" id="descInput" placeholder="Expense detail...">
+    <div class="form-row">
+      <div>
+        <label>Description</label>
+        <input type="text" id="descInput" placeholder="Expense detail...">
+      </div>
 
-    <label>Amount (₹)</label>
-    <input type="number" id="amountInput" placeholder="Amount">
+      <div>
+        <label>Amount (₹)</label>
+        <input type="number" id="amountInput" placeholder="Amount">
+      </div>
+    </div>
 
-    <button class="btn-primary" id="addBtn" onclick="addExpense()">Add Entry</button>
-</div>
+    <button id="saveBtn">💾 Save</button>
+    <div id="loadingIcon"><span class="spinner"></span> Saving...</div>
+  </div>
 
-<!-- TABLE SECTION -->
-<div class="card">
-    <h3>Expenditure Records</h3>
+  <!-- TABLE SECTION -->
+  <div class="card">
+    <div class="card-title">Expenditure Records</div>
 
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Employee</th>
-                    <th>Description</th>
-                    <th>Amount (₹)</th>
-                    <th>Edit</th>
-                    <th>Delete</th>
-                </tr>
-            </thead>
-            <tbody id="expenseBody"></tbody>
-        </table>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Employee</th>
+            <th>Description</th>
+            <th>Amount (₹)</th>
+            <th>Edit</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody id="expenseBody"></tbody>
+      </table>
     </div>
 
     <h3>Total Expenditure: ₹ <span id="totalAmt">0</span></h3>
+  </div>
+
 </div>
 
 <script type="module">
 /* FIREBASE */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs,
   deleteDoc, updateDoc, getDoc, doc
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
-    authDomain: "tak-agro.firebaseapp.com",
-    projectId: "tak-agro",
-    storageBucket: "tak-agro.firebasestorage.app",
-    messagingSenderId: "153802937772",
-    appId: "1:153802937772:web:abca377434d940d0b5ac69"
+  apiKey: "AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
+  authDomain: "tak-agro.firebaseapp.com",
+  projectId: "tak-agro",
+  storageBucket: "tak-agro.firebasestorage.app",
+  messagingSenderId: "153802937772",
+  appId: "1:153802937772:web:abca377434d940d0b5ac69"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db  = getFirestore(app);
 
 const employeesCol = collection(db, "employees");
 const expenseCol   = collection(db, "employee_expenditures");
 
 /* DOM */
-const dateInput = document.getElementById("dateInput");
+const dateInput      = document.getElementById("dateInput");
 const employeeSelect = document.getElementById("employeeSelect");
-const descInput = document.getElementById("descInput");
-const amountInput = document.getElementById("amountInput");
-const expenseBody = document.getElementById("expenseBody");
-const totalAmtSpan = document.getElementById("totalAmt");
-const addBtn = document.getElementById("addBtn");
+const descInput      = document.getElementById("descInput");
+const amountInput    = document.getElementById("amountInput");
+const expenseBody    = document.getElementById("expenseBody");
+const totalAmtSpan   = document.getElementById("totalAmt");
+const saveBtn        = document.getElementById("saveBtn");
+const loadingIcon    = document.getElementById("loadingIcon");
 
+/* default date = today */
 dateInput.valueAsNumber = Date.now() - new Date().getTimezoneOffset()*60000;
 
 let employees = {};
 let editingId = null;
 
 /* LOAD EMPLOYEES */
-async function loadEmployees() {
-    const snap = await getDocs(employeesCol);
-    snap.forEach(e => {
-        employees[e.id] = e.data().name;
-        let opt = document.createElement("option");
-        opt.value = e.id;
-        opt.textContent = e.data().name;
-        employeeSelect.appendChild(opt);
-    });
+async function loadEmployees(){
+  const snap = await getDocs(employeesCol);
+  snap.forEach(e=>{
+    employees[e.id] = e.data().name;
+    const opt = document.createElement("option");
+    opt.value = e.id;
+    opt.textContent = e.data().name;
+    employeeSelect.appendChild(opt);
+  });
 }
 loadEmployees();
 
-/* ADD / UPDATE EXPENSE */
-async function addExpense() {
-    addBtn.disabled = true;
-    let old = addBtn.textContent;
-    addBtn.textContent = editingId ? "Updating..." : "Saving...";
-
-    const date = dateInput.value;
-    const emp  = employeeSelect.value;
-    const desc = descInput.value.trim();
-    const amt  = Number(amountInput.value);
-
-    if (!date || !emp || !desc || !amt) {
-        Swal.fire("Missing!", "Please fill all fields.", "warning");
-        resetBtn();
-        return;
-    }
-
-    try {
-        if (editingId) {
-            await updateDoc(doc(db, "employee_expenditures", editingId), {
-                date, employeeId: emp, description: desc, amount: amt
-            });
-            Swal.fire("Updated!", "Expenditure updated.", "success");
-        } else {
-            await addDoc(expenseCol, {
-                date, employeeId: emp, description: desc, amount: amt
-            });
-            Swal.fire("Saved!", "Expenditure added.", "success");
-        }
-
-        clearForm();
-        editingId = null;
-        addBtn.textContent = "Add Entry";
-
-        loadExpenses();
-
-    } catch (err) {
-        Swal.fire("Error", err.message, "error");
-    }
-
-    resetBtn();
+/* CLEAR FORM */
+function clearForm(){
+  editingId = null;
+  dateInput.value = "";
+  employeeSelect.value = "";
+  descInput.value = "";
+  amountInput.value = "";
 }
 
-function resetBtn() {
-    addBtn.disabled = false;
-    addBtn.textContent = editingId ? "Update Entry" : "Add Entry";
-}
+/* LOAD EXPENSES TABLE */
+async function loadExpenses(){
+  const snap = await getDocs(expenseCol);
+  expenseBody.innerHTML = "";
+  let total = 0;
 
-function clearForm() {
-    dateInput.value = "";
-    employeeSelect.value = "";
-    descInput.value = "";
-    amountInput.value = "";
-}
+  snap.forEach(item=>{
+    const d = item.data();
+    total += d.amount;
 
-/* LOAD TABLE */
-async function loadExpenses() {
-    const snap = await getDocs(expenseCol);
-    expenseBody.innerHTML = "";
-    let total = 0;
+    expenseBody.innerHTML += `
+      <tr>
+        <td>${d.date}</td>
+        <td>${employees[d.employeeId] || "Unknown"}</td>
+        <td>${d.description}</td>
+        <td>₹${d.amount}</td>
+        <td><button class="btn-sm btn-edit" onclick="editExpense('${item.id}')">Edit</button></td>
+        <td><button class="btn-sm btn-del" onclick="deleteExpense('${item.id}')">Delete</button></td>
+      </tr>
+    `;
+  });
 
-    snap.forEach(item => {
-        const d = item.data();
-        total += d.amount;
-
-        expenseBody.innerHTML += `
-            <tr>
-                <td>${d.date}</td>
-                <td>${employees[d.employeeId] || "Unknown"}</td>
-                <td>${d.description}</td>
-                <td>₹${d.amount}</td>
-                <td><button class="btn-secondary btn-small" onclick="editExpense('${item.id}')">Edit</button></td>
-                <td><button class="btn-danger btn-small" onclick="deleteExpense('${item.id}')">Delete</button></td>
-            </tr>
-        `;
-    });
-
-    totalAmtSpan.textContent = total;
+  totalAmtSpan.textContent = total;
 }
 loadExpenses();
 
+/* SAVE / UPDATE EXPENSE */
+saveBtn.addEventListener("click", async ()=>{
+  const date = dateInput.value;
+  const emp  = employeeSelect.value;
+  const desc = descInput.value.trim();
+  const amt  = Number(amountInput.value);
+
+  if(!date || !emp || !desc || amt <= 0){
+    return Swal.fire("Missing!", "Please fill all fields correctly.", "warning");
+  }
+
+  saveBtn.style.display = "none";
+  loadingIcon.style.display = "block";
+
+  try{
+    if(editingId){
+      await updateDoc(doc(db,"employee_expenditures",editingId),{
+        date,
+        employeeId: emp,
+        description: desc,
+        amount: amt
+      });
+      Swal.fire("Updated!","Expenditure updated.","success");
+    } else {
+      await addDoc(expenseCol,{
+        date,
+        employeeId: emp,
+        description: desc,
+        amount: amt
+      });
+      Swal.fire("Saved!","Expenditure added.","success");
+    }
+
+    clearForm();
+    loadExpenses();
+
+  }catch(err){
+    Swal.fire("Error", err.message, "error");
+  }
+
+  saveBtn.style.display = "block";
+  loadingIcon.style.display = "none";
+});
+
 /* EDIT POPUP */
-async function editExpense(id) {
-    const snap = await getDoc(doc(db, "employee_expenditures", id));
-    if (!snap.exists()) return;
+window.editExpense = async function(id){
+  const snap = await getDoc(doc(db,"employee_expenditures",id));
+  if(!snap.exists()) return;
+  const d = snap.data();
 
-    const d = snap.data();
+  let empOptions = "";
+  for(const eid in employees){
+    empOptions += `<option value="${eid}" ${eid===d.employeeId?"selected":""}>${employees[eid]}</option>`;
+  }
 
-    // Build employee dropdown HTML
-    let empOptions = "";
-    Object.keys(employees).forEach(eid => {
-        empOptions += `<option value="${eid}" ${eid === d.employeeId ? "selected" : ""}>${employees[eid]}</option>`;
-    });
+  const { value: vals } = await Swal.fire({
+    title:"Edit Expenditure",
+    html:`
+      <label class="popup-label">Employee</label>
+      <select id="sw_emp" class="popup-field">${empOptions}</select>
 
-    const { value: formData } = await Swal.fire({
-        title: "Edit Expenditure",
-        html: `
-            <label style='font-size:12px;'>Date</label>
-            <input id="sw_date" type="date" class="swal2-input" value="${d.date}">
+      <label class="popup-label">Date</label>
+      <input id="sw_date" type="date" class="popup-field" value="${d.date}">
 
-            <label style='font-size:12px;'>Employee</label>
-            <select id="sw_emp" class="swal2-select">${empOptions}</select>
+      <label class="popup-label">Description</label>
+      <input id="sw_desc" class="popup-field" value="${d.description}">
 
-            <label style='font-size:12px;'>Description</label>
-            <input id="sw_desc" class="swal2-input" value="${d.description}">
+      <label class="popup-label">Amount (₹)</label>
+      <input id="sw_amt" type="number" class="popup-field" value="${d.amount}">
+    `,
+    showCancelButton:true,
+    confirmButtonText:"Save",
+    preConfirm:()=>({
+      employeeId: document.getElementById("sw_emp").value,
+      date:        document.getElementById("sw_date").value,
+      description: document.getElementById("sw_desc").value.trim(),
+      amount:      Number(document.getElementById("sw_amt").value)
+    })
+  });
 
-            <label style='font-size:12px;'>Amount (₹)</label>
-            <input id="sw_amt" type="number" class="swal2-input" value="${d.amount}">
-        `,
-        focusConfirm: false,
-        confirmButtonText: "Save",
-        showCancelButton: true,
-        preConfirm: () => ({
-            date: document.getElementById("sw_date").value,
-            employeeId: document.getElementById("sw_emp").value,
-            description: document.getElementById("sw_desc").value,
-            amount: Number(document.getElementById("sw_amt").value)
-        })
-    });
+  if(!vals) return;
 
-    if (!formData) return;
-
-    await updateDoc(doc(db, "employee_expenditures", id), formData);
-
-    Swal.fire("Updated!", "Expenditure updated successfully.", "success");
-    loadExpenses();
+  await updateDoc(doc(db,"employee_expenditures",id), vals);
+  Swal.fire("Updated!","Expenditure updated successfully.","success");
+  loadExpenses();
 }
 
-/* DELETE EXPENSE */
-async function deleteExpense(id) {
-    const confirm = await Swal.fire({
-        title: "Delete Expense?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#dc2626",
-        cancelButtonColor: "#6b7280",
-        confirmButtonText: "Yes"
-    });
+/* DELETE */
+window.deleteExpense = async function(id){
+  const res = await Swal.fire({
+    title:"Delete Expense?",
+    icon:"warning",
+    showCancelButton:true,
+    confirmButtonText:"Delete",
+    confirmButtonColor:"#dc2626"
+  });
 
-    if (!confirm.isConfirmed) return;
+  if(!res.isConfirmed) return;
 
-    await deleteDoc(doc(db, "employee_expenditures", id));
-    Swal.fire("Deleted!", "Entry removed.", "success");
-    loadExpenses();
+  await deleteDoc(doc(db,"employee_expenditures",id));
+  Swal.fire("Deleted!","Entry removed.","success");
+  loadExpenses();
 }
-
-/* GLOBAL FUNCTIONS */
-window.addExpense = addExpense;
-window.editExpense = editExpense;
-window.deleteExpense = deleteExpense;
-
 </script>
 
 </body>
