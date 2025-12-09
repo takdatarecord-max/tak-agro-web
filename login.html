@@ -9,60 +9,184 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
+
+/* LIGHT & DARK MODE COLORS */
+:root {
+  --bg-light: linear-gradient(135deg, #dbeafe, #f1f5f9);
+  --bg-dark: #0f172a;
+
+  --card-light: #ffffff;
+  --card-dark: #1e293b;
+
+  --text-light: #0f172a;
+  --text-dark: #e2e8f0;
+
+  --primary: #2563eb;
+  --primary-hover: #1e40af;
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
-  background: #f3f4f6;
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s ease;
 }
 
-.container {
-  max-width: 380px;
-  margin: 80px auto;
+body.light {
+  background: var(--bg-light);
+  color: var(--text-light);
+}
+
+body.dark {
+  background: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  width: 42px;
+  height: 42px;
+  font-size: 20px;
+  border-radius: 50%;
   background: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  cursor: pointer;
+  z-index: 99;
 }
 
+body.dark .theme-toggle {
+  background: #1e293b;
+  color: white;
+}
+
+/* LOGIN CARD */
+.container {
+  width: 92%;
+  max-width: 380px;
+  padding: 28px 25px;
+  background: var(--card-light);
+  border-radius: 18px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+  text-align: center;
+  transition: 0.3s ease;
+}
+
+body.dark .container {
+  background: var(--card-dark);
+}
+
+/* Logo */
+.logo-circle {
+  width: 65px;
+  height: 65px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  margin: auto;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 18px rgba(37,99,235,0.4);
+}
+
+h2 {
+  margin: 6px 0;
+  font-size: 22px;
+}
+
+.sub {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-bottom: 18px;
+}
+
+/* INPUTS */
 input {
   width: 100%;
-  padding: 12px;
-  margin-top: 12px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
+  padding: 14px;
+  margin-top: 14px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
   font-size: 16px;
+  box-sizing: border-box;
 }
 
+body.dark input {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+}
+
+input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 6px rgba(37,99,235,0.3);
+  outline: none;
+}
+
+/* BUTTON */
 button {
   width: 100%;
-  padding: 12px;
-  margin-top: 20px;
-  font-size: 16px;
-  border-radius: 6px;
+  padding: 14px;
+  margin-top: 22px;
+  background: var(--primary);
+  border-radius: 12px;
   border: none;
-  background: #2563eb;
   color: white;
+  font-size: 17px;
   cursor: pointer;
 }
-button:hover { background: #1e40af; }
 
-.forgot {
-  margin-top: 12px;
-  display: block;
-  font-size: 14px;
-  color: #2563eb;
-  cursor: pointer;
-  text-decoration: underline;
+button:hover {
+  background: var(--primary-hover);
 }
+
+/* Forgot password */
+.forgot {
+  margin-top: 14px;
+  display: block;
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--primary);
+}
+
+/* SWEETALERT MOBILE FRIENDLY */
+.swal2-popup {
+  width: 90% !important;
+  max-width: 330px !important;
+  border-radius: 16px !important;
+}
+
+.swal2-input {
+  padding: 12px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+}
+
 </style>
 </head>
 
-<body>
+<body class="light">
+
+<div class="theme-toggle" onclick="toggleTheme()">🌙</div>
 
 <div class="container">
-  <h2>Tak Agro Login</h2>
+  <div class="logo-circle">TA</div>
+  <h2>Tak Agro</h2>
+  <div class="sub">Secure Owner Login</div>
 
   <input id="loginEmail" type="email" placeholder="Enter Email">
   <input id="loginPassword" type="password" placeholder="Enter Password">
@@ -72,18 +196,26 @@ button:hover { background: #1e40af; }
   <span class="forgot" onclick="forgotPassword()">Forgot Password?</span>
 </div>
 
+<script>
+// DARK / LIGHT MODE
+function toggleTheme() {
+  const body = document.body;
+  const toggle = document.querySelector(".theme-toggle");
+
+  body.classList.toggle("dark");
+  body.classList.toggle("light");
+
+  toggle.textContent = body.classList.contains("dark") ? "☀️" : "🌙";
+}
+</script>
+
 <script type="module">
-/* FIREBASE IMPORTS */
+/* FIREBASE IMPORTS (NO CHANGE AT ALL) */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { 
-  getAuth, signInWithEmailAndPassword, sendPasswordResetEmail 
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-import {
-  getFirestore, doc, setDoc
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-
-/* FIREBASE CONFIG (same everywhere) */
+/* FIREBASE CONFIG SAME AS ORIGINAL */
 const firebaseConfig = {
   apiKey: "AIzaSyApcn2ckkvfLaEuKEKOZfC6hcEfx44ZDJ0",
   authDomain: "tak-agro.firebaseapp.com",
@@ -93,68 +225,66 @@ const firebaseConfig = {
   appId: "1:158309293772:web:ebca377434d940d0b5ac69"
 };
 
-const app  = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db   = getFirestore(app);
+const db = getFirestore(app);
 
 const OWNER_EMAIL = "bhuraramtak81@gmail.com";
 
-/* ---------------- LOGIN FUNCTION (with single session) ---------------- */
+/* ---------------- LOGIN FUNCTION (NO CHANGE) ---------------- */
 window.loginUser = async function () {
-  const email = document.getElementById("loginEmail").value.trim();
-  const pass  = document.getElementById("loginPassword").value.trim();
+  const email = loginEmail.value.trim();
+  const pass = loginPassword.value.trim();
 
-  if (!email || !pass) {
-    return Swal.fire("Missing", "Enter both email & password", "warning");
-  }
+  if (!email || !pass) return Swal.fire("Missing", "Enter both fields", "warning");
 
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pass);
 
-    // sirf owner ko allow karna (optional, jaise index me)
-    if (cred.user.email !== OWNER_EMAIL) {
-      Swal.fire("Access Denied", "Only owner account allowed.", "error");
-      return;
-    }
+    if (cred.user.email !== OWNER_EMAIL)
+      return Swal.fire("Access Denied", "Only owner allowed", "error");
 
-    // 🔥 ek unique session ID banayenge
-    const sessionId = Date.now().toString() + "_" + Math.random().toString(36).slice(2);
+    const sessionId = Date.now() + "_" + Math.random().toString(36).slice(2);
 
-    // 🔥 Firestore me session save (sessions/owner)
     await setDoc(doc(db, "sessions", "owner"), {
       sessionId: sessionId,
       updatedAt: Date.now()
     });
 
-    // 🔥 Browser me bhi store
     localStorage.setItem("ownerSessionId", sessionId);
 
     Swal.fire("Success!", "Login successful!", "success");
 
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 700);
+    setTimeout(() => window.location.href = "index.html", 700);
 
   } catch (err) {
     Swal.fire("Login Failed", err.message, "error");
   }
 };
 
-/* ---------------- FORGOT PASSWORD FUNCTION ---------------- */
+/* ---------------- UPDATED FORGOT PASSWORD (STYLISH + MOBILE FRIENDLY) ---------------- */
 window.forgotPassword = async function () {
+
   const { value: email } = await Swal.fire({
     title: "Reset Password",
-    input: "email",
-    inputPlaceholder: "Enter your registered email",
+    html: `
+      <input id="resetEmail" type="email" class="swal2-input" placeholder="Enter Owner Email">
+    `,
+    confirmButtonText: "Send Link",
+    cancelButtonText: "Cancel",
     showCancelButton: true,
-    confirmButtonText: "Send Reset Link"
+    preConfirm: () => document.getElementById("resetEmail").value.trim()
   });
 
   if (!email) return;
 
+  if (email !== OWNER_EMAIL)
+    return Swal.fire("Denied", "Only owner email can reset password.", "error");
+
   try {
-    await sendPasswordResetEmail(auth, email.trim());
-    Swal.fire("Email Sent!", "Check your inbox for password reset link.", "success");
+    await sendPasswordResetEmail(auth, email);
+
+    Swal.fire("Email Sent!", "Check your inbox.", "success");
 
   } catch (err) {
     Swal.fire("Error", err.message, "error");
