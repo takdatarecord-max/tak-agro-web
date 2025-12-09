@@ -2,77 +2,119 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Tak Agro – Update Profile</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Update Profile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-    body{
-        margin:0; padding:15px; background:#f3f4f6; font-family:Arial;
-    }
-    .card{
-        max-width:450px; margin:auto; background:white;
-        padding:20px; border-radius:12px;
-        box-shadow:0 2px 6px rgba(0,0,0,0.1);
-    }
-    .profile-preview{
-        width:130px; height:130px; border-radius:50%;
-        display:block; margin:auto; object-fit:cover;
-        border:3px solid #ddd;
-    }
-    label{ font-weight:600; margin-top:10px; display:block; }
-    input{
-        width:100%; padding:10px; margin-top:5px; border-radius:6px;
-        border:1px solid #ccc;
-    }
-    button{
-        width:100%; padding:12px; margin-top:15px;
-        background:#2563eb; color:white;
-        border:none; border-radius:6px;
-        font-size:16px; cursor:pointer;
-    }
-    button:hover{ background:#1d4ed8; }
+body {
+  background:#f3f4f6;
+  font-family: Arial, sans-serif;
+  margin:0;
+  padding:20px;
+}
 
-    .back{
-        display:block; margin-top:12px; background:#6b7280;
-        padding:10px; color:white; text-align:center;
-        border-radius:6px; text-decoration:none;
-    }
+.container {
+  max-width:420px;
+  margin:30px auto;
+  background:white;
+  padding:25px;
+  border-radius:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.1);
+  text-align:center;
+}
+
+.profile-img {
+  width:130px;
+  height:130px;
+  border-radius:50%;
+  object-fit:cover;
+  border:4px solid #e5e7eb;
+  margin-bottom:12px;
+}
+
+input {
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:6px;
+  border:1px solid #cdd0d4;
+  background:#f8f9fa;
+  font-size:15px;
+}
+
+input[readonly] {
+  background:#e5e7eb;
+  color:#555;
+}
+
+button {
+  margin-top:18px;
+  width:100%;
+  padding:11px;
+  font-size:16px;
+  border:none;
+  border-radius:6px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+}
+button:hover { background:#1e40af; }
+
+.back {
+  display:block;
+  margin-top:15px;
+  padding:12px;
+  background:#475569;
+  color:white;
+  border-radius:6px;
+  text-align:center;
+  text-decoration:none;
+}
 </style>
 </head>
 
 <body>
-<div class="card">
 
-    <h2 style="text-align:center;">Update Profile</h2>
+<div class="container">
 
-    <img id="imgPreview"
-         class="profile-preview"
-         src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+  <h2 style="margin-bottom:15px;">Update Profile</h2>
 
-    <label>Profile Photo</label>
-    <input type="file" id="photoFile" accept="image/*">
+  <!-- Profile Image Preview -->
+  <img id="profilePreview" class="profile-img"
+       src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
 
-    <label>Name</label>
-    <input type="text" id="nameInput" placeholder="Your Name">
+  <input type="file" id="photoInput" accept="image/*">
 
-    <button onclick="saveProfile()">Save Profile</button>
+  <input id="name" placeholder="Name">
+  <input id="mobile" placeholder="Mobile">
 
-    <a href="index.html" class="back">⬅ Back to Dashboard</a>
+  <!-- EMAIL LOCKED -->
+  <input id="email" placeholder="Email" readonly>
 
+  <input id="address" placeholder="Address">
+
+  <button onclick="saveProfile()">Save Profile</button>
+
+  <a class="back" href="profile.html">← Back to Profile</a>
 </div>
+
 
 <script type="module">
 
-/* 🔥 Firebase Imports */
+/* FIREBASE IMPORTS */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+import {
+  getFirestore, doc, setDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-/* 🔥 Your Firebase Config */
+import {
+  getAuth, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+
+/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyApcn2ckkvfLaEuKEKOZfC6hcEfx44ZDJ0",
   authDomain: "tak-agro.firebaseapp.com",
@@ -82,75 +124,94 @@ const firebaseConfig = {
   appId: "1:158309293772:web:ebca377434d940d0b5ac69"
 };
 
-const app      = initializeApp(firebaseConfig);
-const auth     = getAuth(app);
-const db       = getFirestore(app);
-const storage  = getStorage(app);
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
 
-let oldPhotoURL = "";
+const OWNER_EMAIL = "bhuraramtak81@gmail.com";
 
-/* ---------------- LOAD OLD PROFILE ---------------- */
-onAuthStateChanged(auth, async (user)=>{
-    if(!user) return location.href = "login.html";
+let selectedImageBase64 = "";
 
-    const snap = await getDoc(doc(db, "profiles", "owner"));
-    if (snap.exists()) {
-        const d = snap.data();
 
-        if (d.name) document.getElementById("nameInput").value = d.name;
-        if (d.photoURL) {
-            oldPhotoURL = d.photoURL;
-            document.getElementById("imgPreview").src = d.photoURL;
-        }
+/* LOAD PROFILE */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return (window.location.href = "login.html");
+
+  if (user.email !== OWNER_EMAIL) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  document.getElementById("email").value = user.email;
+
+  const snap = await getDoc(doc(db, "profiles", "owner"));
+  if (snap.exists()) {
+    const data = snap.data();
+    document.getElementById("name").value    = data.name || "";
+    document.getElementById("mobile").value  = data.mobile || "";
+    document.getElementById("address").value = data.address || "";
+
+    if (data.photoURL) {
+      document.getElementById("profilePreview").src = data.photoURL;
     }
+  }
 });
 
-/* ---------------- IMAGE PREVIEW ---------------- */
-document.getElementById("photoFile").addEventListener("change", (e)=>{
-    const file = e.target.files[0];
-    if (file) {
-        document.getElementById("imgPreview").src = URL.createObjectURL(file);
-    }
+
+
+/* -------- 1 MB IMAGE CHECK + PREVIEW -------- */
+document.getElementById("photoInput").addEventListener("change", function () {
+
+  const file = this.files[0];
+  if (!file) return;
+
+  if (file.size > 1024 * 1024) {   // 1MB limit
+    Swal.fire("Error", "Image size must be less than 1 MB!", "error");
+    this.value = ""; // reset file input
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function () {
+    selectedImageBase64 = reader.result;
+    document.getElementById("profilePreview").src = selectedImageBase64;
+  };
+  reader.readAsDataURL(file);
 });
 
-/* ---------------- SAVE PROFILE ---------------- */
-window.saveProfile = async function() {
 
-    const name = document.getElementById("nameInput").value.trim();
-    const file = document.getElementById("photoFile").files[0];
 
-    if (!name) {
-        return Swal.fire("Missing!", "Name is required", "warning");
-    }
+/* -------- SAVE PROFILE -------- */
+window.saveProfile = async function () {
 
-    Swal.fire({ title:"Saving...", allowOutsideClick:false });
-    Swal.showLoading();
+  let name    = document.getElementById("name").value.trim();
+  let mobile  = document.getElementById("mobile").value.trim();
+  let address = document.getElementById("address").value.trim();
 
-    let photoURL = oldPhotoURL;
+  Swal.fire({
+    title: "Saving...",
+    showConfirmButton: false,
+    allowOutsideClick: false
+  });
 
-    try {
+  try {
 
-        /* Upload new image if selected */
-        if (file) {
-            const r = ref(storage, "profile/owner.jpg");
-            await uploadBytes(r, file);
-            photoURL = await getDownloadURL(r);
-        }
+    await setDoc(doc(db, "profiles", "owner"), {
+      name,
+      mobile,
+      address,
+      ...(selectedImageBase64 ? { photoURL: selectedImageBase64 } : {})
+    });
 
-        /* Save Firestore */
-        await setDoc(doc(db, "profiles", "owner"), {
-            name,
-            photoURL
-        }, { merge:true });
+    Swal.fire("Success!", "Profile updated successfully!", "success");
 
-        Swal.fire("Success", "Profile updated successfully!", "success")
-            .then(()=> location.href = "index.html");
+    setTimeout(()=> window.location.href = "profile.html", 900);
 
-    } catch(err) {
-        console.log(err);
-        Swal.fire("Error", err.message, "error");
-    }
+  } catch (err) {
+    Swal.fire("Error", err.message, "error");
+  }
 };
+
 </script>
 
 </body>
