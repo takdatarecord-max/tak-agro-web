@@ -12,116 +12,167 @@
 
   body {
     margin: 0;
-    padding: 16px;
-    background: #f3f4f6;
-    font-family: Arial, sans-serif;
-    color: #111827;
+    padding: 20px;
+    font-family: "Poppins", sans-serif;
+    color: #0f172a;
+    min-height: 100vh;
+    background: radial-gradient(circle at top left, #93c5fd 0, #dbeafe 40%, #f1f5f9 80%);
   }
 
-  .wrapper { max-width: 1200px; margin: auto; }
+  body::before,
+  body::after {
+    content:"";
+    position:fixed;
+    width:240px;
+    height:240px;
+    border-radius:999px;
+    filter:blur(60px);
+    opacity:0.45;
+    z-index:-1;
+  }
+  body::before { top:-60px; left:-40px; background:#60a5fa; }
+  body::after  { bottom:-70px; right:-30px; background:#f472b6; }
 
+  .wrapper { max-width:1050px; margin:auto; }
+
+  /* HEADER */
   .page-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+    padding:10px 0;
   }
-  .page-header-icon { font-size: 26px; }
-  .page-title { font-size: 22px; font-weight: 700; }
+  .page-header-icon { font-size:28px; }
+  .page-title { font-size:22px; font-weight:700; }
 
   .back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: none;
-    background: #e5e7eb;
-    cursor: pointer;
-    font-size: 13px;
-    margin-bottom: 12px;
+    padding:8px 18px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.6);
+    border:1px solid rgba(148,163,184,0.4);
+    cursor:pointer;
+    font-size:13px;
+    margin-bottom:14px;
   }
-  .back-btn:hover { background: #d1d5db; }
 
+  /* CARD */
   .card {
-    background: #ffffff;
-    padding: 16px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    background:rgba(255,255,255,0.65);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(148,163,184,0.45);
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:18px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.15);
   }
 
-  .card-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
-  }
+  .card-title { font-size:17px; font-weight:600; margin-bottom:10px; }
 
-  label {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    display: block;
-    color: #374151;
-  }
-
-  input[type="text"] {
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-    font-size: 14px;
-  }
-
-  input:focus {
-    border-color: #2563eb;
-    outline: none;
-    box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
-  }
-
+  /* FORM */
   .form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px 16px;
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .form-row > div {
+    flex:1;
+    min-width:240px;
+    max-width:320px;
   }
 
-  .btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    font-size: 14px;
-    cursor: pointer;
+  input[type="text"],
+  select {
+    width:100%;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(148,163,184,0.6);
+    background:rgba(255,255,255,0.7);
+    font-size:14px;
   }
 
-  .btn-primary { background: #2563eb; color:white; }
-  .btn-danger { background:#dc2626;color:white; }
-  .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 999px; }
+  input:focus,
+  select:focus {
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 0 1px rgba(37,99,235,0.2);
+  }
+
+  /* SAVE BUTTON + LOADING */
+  #saveBtn {
+    margin-top:10px;
+    padding:10px 18px;
+    font-size:15px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#2563eb,#38bdf8);
+    color:white;
+    border:none;
+    cursor:pointer;
+  }
+
+  #loadingIcon {
+    display:none;
+    margin-top:10px;
+    font-size:14px;
+    color:#2563eb;
+  }
 
   .spinner {
-    border: 3px solid #e5e7eb;
-    border-top: 3px solid #2563eb;
-    border-radius: 50%;
-    width: 16px; height: 16px;
-    animation: spin 0.7s linear infinite;
+    width:18px;
+    height:18px;
+    border:3px solid #e5e7eb;
+    border-top:3px solid #2563eb;
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    display:inline-block;
   }
-  @keyframes spin { 100% { transform: rotate(360deg);} }
+  @keyframes spin { 100% { transform:rotate(360deg); } }
 
-  #loadingIcon { display:none; margin-left:10px; font-size:13px; }
-
-  /* FULL BORDER TABLE */
+  /* TABLE */
   table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    border: 1px solid #d1d5db;
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.55);
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(148,163,184,0.45);
+    border-radius:12px;
+    overflow:hidden;
+    text-align:center;
   }
+
   th, td {
-    padding: 8px;
-    border: 1px solid #d1d5db;
-    white-space: nowrap;
+    padding:10px;
+    border-bottom:1px solid rgba(148,163,184,0.35);
+    text-align:center;
   }
-  thead { background: #f9fafb; }
-  tr:hover td { background: #f3f4f6; }
+
+  thead { background:rgba(255,255,255,0.75); font-weight:600; }
+  tr:hover td { background:rgba(255,255,255,0.8); }
+
+  .btn-sm {
+    padding:5px 12px;
+    font-size:12px;
+    border-radius:999px;
+    border:none;
+    cursor:pointer;
+  }
+
+  .edit-btn {
+    background:#3b82f6;
+    color:white;
+  }
+  .delete-btn {
+    background:#dc2626;
+    color:white;
+  }
+
+  /* SWEETALERT GLASS THEME */
+  .swal2-popup {
+    background:rgba(255,255,255,0.7) !important;
+    backdrop-filter:blur(14px) !important;
+    border-radius:18px !important;
+    border:1px solid rgba(148,163,184,0.45) !important;
+  }
 </style>
 </head>
 
@@ -133,8 +184,9 @@
     <div class="page-title">Product Management</div>
   </div>
 
-  <button class="back-btn" onclick="window.location.href='index.html'">⬅ Back to Dashboard</button>
+  <button class="back-btn" onclick="location.href='index.html'">⬅ Back</button>
 
+  <!-- ADD / EDIT PRODUCT -->
   <div class="card">
     <div class="card-title">Add / Edit Product</div>
 
@@ -142,28 +194,44 @@
 
     <div class="form-row">
       <div>
-        <label>Product Name</label>
-        <input type="text" id="p_name" placeholder="Product Name">
+        <label>Category</label>
+        <select id="p_category">
+          <option value="">Select Category</option>
+          <option value="Vegetable">Vegetable</option>
+          <option value="Crop">Crop</option>
+          <option value="Fruit">Fruit</option>
+        </select>
       </div>
 
       <div>
-        <label>Category</label>
-        <input type="text" id="p_category" placeholder="Category">
+        <label>Product Name</label>
+        <select id="p_name" disabled>
+          <option value="">Select Category first</option>
+        </select>
       </div>
     </div>
 
     <div class="form-row">
       <div>
-        <label>Unit</label>
-        <input type="text" id="p_unit" placeholder="Kg, Litre, Piece, Bag">
+        <label>Unit (इकाई)</label>
+        <select id="p_unit">
+          <option value="">Select Unit</option>
+          <option value="Kg">Kg</option>
+          <option value="Gram">Gram</option>
+          <option value="Litre">Litre</option>
+          <option value="ml">ml</option>
+          <option value="Piece">Piece</option>
+          <option value="Bag">Bag</option>
+          <option value="Packet">Packet</option>
+        </select>
       </div>
     </div>
 
-    <button class="btn btn-primary" id="saveBtn">Save</button>
-    <span id="loadingIcon"><span class="spinner"></span> Saving...</span>
-
+    <button id="saveBtn">💾 Save</button>
+    <div id="loadingIcon"><span class="spinner"></span> Saving...</div>
   </div>
 
+  <!-- PRODUCT LIST -->
   <div class="card">
     <div class="card-title">Product List</div>
 
@@ -171,11 +239,10 @@
       <table>
         <thead>
           <tr>
-            <th>Name</th>
             <th>Category</th>
+            <th>Product Name</th>
             <th>Unit</th>
-            <th>Edit</th>
-            <th>Delete</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -186,11 +253,10 @@
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs,
-  updateDoc, deleteDoc, doc, query, where
+  updateDoc, deleteDoc, doc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -209,31 +275,122 @@ const productCol = collection(db,"products");
 const saveBtn = document.getElementById("saveBtn");
 const loadingIcon = document.getElementById("loadingIcon");
 const tableBody = document.getElementById("tableBody");
+const catSelect = document.getElementById("p_category");
+const nameSelect = document.getElementById("p_name");
+const unitSelect = document.getElementById("p_unit");
 
-/* ✅ DUPLICATE CHECK */
-async function duplicateProductCheck(name, category, unit, excludeId = null) {
-  const q = query(productCol, where("name", "==", name.toLowerCase()));
-  const snap = await getDocs(q);
+/* 🔹 CATEGORY → PRODUCT NAME MAP */
+const CATEGORY_PRODUCTS = {
+  "Vegetable": [
+    "Potato (आलू)",
+    "Tomato (टमाटर)",
+    "Onion (प्याज़)",
+    "Garlic (लहसुन)",
+    "Cauliflower (गोभी)",
+    "Cabbage (पत्तागोभी)",
+    "Brinjal (बैंगन)",
+    "Lady Finger (भिंडी)",
+    "Carrot (গाजर)",
+    "Peas (मटर)",
+    "Spinach (पालक)",
+    "Bottle Gourd (लौकी)",
+    "Bitter Gourd (करेला)",
+    "Green Chili (हरी मिर्च)"
+  ],
+  "Crop": [
+    "Wheat (गेहूँ)",
+    "Mustard (सरसों)",
+    "Corn (मक्का)",
+    "Bajra (बाजरा)",
+    "Barley (जौ)",
+    "Soybean (सोयाबीन)",
+    "Cotton (कपास)",
+    "Sugarcane (गन्ना)",
+    "Groundnut (मूंगफली)",
+    "Sunflower (सूरजमुखी)"
+  ],
+  "Fruit": [
+    "Mango (आम)",
+    "Banana (केला)",
+    "Orange (संतरा)",
+    "Papaya (पपीता)",
+    "Grapes (अंगूर)",
+    "Apple (सेब)"
+  ]
+};
 
+/* COMMON FUNCTION → Fill any product <select> based on category */
+function populateProductSelect(category, selectEl, selectedValue = "") {
+  selectEl.innerHTML = "";
+
+  if (!category) {
+    selectEl.disabled = true;
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Select Category first";
+    selectEl.appendChild(opt);
+    return;
+  }
+
+  const list = CATEGORY_PRODUCTS[category] || [];
+  selectEl.disabled = false;
+
+  const def = document.createElement("option");
+  def.value = "";
+  def.textContent = "Select Product";
+  selectEl.appendChild(def);
+
+  list.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    if (p === selectedValue) opt.selected = true;
+    selectEl.appendChild(opt);
+  });
+
+  // if editing & previous product not in list, add it
+  if (selectedValue && !list.includes(selectedValue)) {
+    const extra = document.createElement("option");
+    extra.value = selectedValue;
+    extra.textContent = selectedValue;
+    extra.selected = true;
+    selectEl.appendChild(extra);
+  }
+}
+
+/* MAIN FORM: when category changes → update product list */
+catSelect.addEventListener("change", () => {
+  populateProductSelect(catSelect.value, nameSelect);
+});
+
+/* LOADING */
+function startLoad(){
+  saveBtn.style.display = "none";
+  loadingIcon.style.display = "block";
+}
+function stopLoad(){
+  saveBtn.style.display = "inline-block";
+  loadingIcon.style.display = "none";
+}
+
+/* DUPLICATE CHECK (Category + Name + Unit) */
+async function duplicateProductCheck(category, name, unit, excludeId = null) {
+  const snap = await getDocs(productCol);
   let dup = false;
+
   snap.forEach(docSnap => {
     const d = docSnap.data();
-
     if (
-      d.category.toLowerCase() === category.toLowerCase() &&
-      d.unit.toLowerCase() === unit.toLowerCase() &&
-      docSnap.id !== excludeId
+      docSnap.id !== excludeId &&
+      d.category === category &&
+      d.name === name &&
+      d.unit === unit
     ) {
       dup = true;
     }
   });
-
   return dup;
 }
-
-/* SPINNER */
-function startLoad(){ loadingIcon.style.display="inline-flex"; saveBtn.disabled=true; }
-function stopLoad(){ loadingIcon.style.display="none"; saveBtn.disabled=false; }
 
 /* LOAD TABLE */
 async function loadProducts(){
@@ -245,38 +402,82 @@ async function loadProducts(){
 
     tableBody.innerHTML += `
       <tr>
-        <td>${d.name}</td>
         <td>${d.category}</td>
+        <td>${d.name}</td>
         <td>${d.unit}</td>
-        <td><button class="btn-sm btn-primary" onclick="editProduct('${docSnap.id}','${d.name}','${d.category}','${d.unit}')">Edit</button></td>
-        <td><button class="btn-sm btn-danger" onclick="deleteProduct('${docSnap.id}')">Delete</button></td>
+        <td>
+          <button class="btn-sm edit-btn"
+            onclick="editProduct('${docSnap.id}','${d.category}','${d.name}','${d.unit}')">Edit</button>
+          <button class="btn-sm delete-btn"
+            onclick="deleteProduct('${docSnap.id}')">Delete</button>
+        </td>
       </tr>`;
   });
 }
 
-/* EDIT POPUP */
-window.editProduct = async function (id, name, category, unit) {
-  const { value: formValues } = await Swal.fire({
+/* EDIT POPUP: Category + ProductName dropdown + Unit dropdown */
+window.editProduct = async function (id, category, name, unit) {
+  const { value: data } = await Swal.fire({
     title: "Edit Product",
     html: `
-      <input id="sw_name" class="swal2-input" value="${name}">
-      <input id="sw_category" class="swal2-input" value="${category}">
-      <input id="sw_unit" class="swal2-input" value="${unit}">
+      <label style="font-weight:700;font-size:13px;">Category</label>
+      <select id="sw_category" class="swal2-input" style="height:auto;padding:8px 10px;">
+        <option value="">Select Category</option>
+        <option value="Vegetable" ${category==="Vegetable"?"selected":""}>Vegetable</option>
+        <option value="Crop" ${category==="Crop"?"selected":""}>Crop</option>
+        <option value="Fruit" ${category==="Fruit"?"selected":""}>Fruit</option>
+      </select>
+
+      <label style="font-weight:700;font-size:13px;">Product Name</label>
+      <select id="sw_name" class="swal2-input" style="height:auto;padding:8px 10px;">
+        <option value="">Select Category first</option>
+      </select>
+
+      <label style="font-weight:700;font-size:13px;">Unit</label>
+      <select id="sw_unit" class="swal2-input" style="height:auto;padding:8px 10px;">
+        <option value="">Select Unit</option>
+        <option value="Kg" ${unit==="Kg"?"selected":""}>Kg</option>
+        <option value="Gram" ${unit==="Gram"?"selected":""}>Gram</option>
+        <option value="Litre" ${unit==="Litre"?"selected":""}>Litre</option>
+        <option value="ml" ${unit==="ml"?"selected":""}>ml</option>
+        <option value="Piece" ${unit==="Piece"?"selected":""}>Piece</option>
+        <option value="Bag" ${unit==="Bag"?"selected":""}>Bag</option>
+        <option value="Packet" ${unit==="Packet"?"selected":""}>Packet</option>
+      </select>
     `,
     showCancelButton: true,
     confirmButtonText: "Save",
-    preConfirm: () => {
-      return {
-        name: document.getElementById("sw_name").value.trim(),
-        category: document.getElementById("sw_category").value.trim(),
-        unit: document.getElementById("sw_unit").value.trim()
-      };
+    didOpen: () => {
+      const catSel = document.getElementById("sw_category");
+      const prodSel = document.getElementById("sw_name");
+      // initial fill with old values
+      populateProductSelect(catSel.value, prodSel, name);
+      catSel.addEventListener("change", () => {
+        populateProductSelect(catSel.value, prodSel);
+      });
+    },
+    preConfirm: async () => {
+      const c = document.getElementById("sw_category").value.trim();
+      const n = document.getElementById("sw_name").value.trim();
+      const u = document.getElementById("sw_unit").value.trim();
+
+      if(!c || !n || !u){
+        Swal.showValidationMessage("All fields are required.");
+        return false;
+      }
+
+      if(await duplicateProductCheck(c, n, u, id)){
+        Swal.showValidationMessage("This product already exists.");
+        return false;
+      }
+
+      return { category:c, name:n, unit:u };
     }
   });
 
-  if (!formValues) return;
+  if (!data) return;
 
-  await updateDoc(doc(db,"products",id), formValues);
+  await updateDoc(doc(db,"products",id), data);
   Swal.fire("Updated!", "Product updated successfully.", "success");
   loadProducts();
 };
@@ -287,7 +488,7 @@ window.deleteProduct = async function(id){
     title: "Delete Product?",
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: "Yes"
+    confirmButtonText: "Delete"
   });
 
   if(!res.isConfirmed) return;
@@ -297,43 +498,34 @@ window.deleteProduct = async function(id){
   Swal.fire("Deleted!", "", "success");
 };
 
-/* SAVE PRODUCT */
+/* SAVE PRODUCT (Add only, edit popup se hoga) */
 saveBtn.addEventListener("click", async () => {
 
-  const id = productId.value;
-  const name = p_name.value.trim().toLowerCase();
-  const category = p_category.value.trim();
-  const unit = p_unit.value.trim();
+  const category = catSelect.value.trim();
+  const name = nameSelect.value.trim();
+  const unit = unitSelect.value.trim();
 
-  // VALIDATION
-  if (!name || !category || !unit) {
+  if (!category || !name || !unit) {
     Swal.fire("Missing!", "All fields are required.", "warning");
     return;
   }
 
   startLoad();
 
-  // DUPLICATE CHECK
-  if (await duplicateProductCheck(name, category, unit, id)) {
+  if (await duplicateProductCheck(category, name, unit, null)) {
     stopLoad();
     Swal.fire("Duplicate!", "This product already exists.", "error");
     return;
   }
 
-  const data = {
-    name,
-    category,
-    unit
-  };
+  const data = { category, name, unit };
 
-  if(id) await updateDoc(doc(db,"products",id), data);
-  else   await addDoc(productCol, data);
+  await addDoc(productCol, data);
 
-  // CLEAR FORM
-  productId.value = "";
-  p_name.value = "";
-  p_category.value = "";
-  p_unit.value = "";
+  catSelect.value = "";
+  nameSelect.innerHTML = `<option value="">Select Category first</option>`;
+  nameSelect.disabled = true;
+  unitSelect.value = "";
 
   stopLoad();
   loadProducts();
@@ -341,6 +533,8 @@ saveBtn.addEventListener("click", async () => {
   Swal.fire("Saved!", "Product saved successfully!", "success");
 });
 
+/* INIT STATE */
+populateProductSelect("", nameSelect);
 loadProducts();
 </script>
 
