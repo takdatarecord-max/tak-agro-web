@@ -5,7 +5,6 @@
 <title>Buyer Management</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
@@ -13,219 +12,215 @@
 
   body {
     margin: 0;
-    padding: 16px;
-    background: #f3f4f6;
-    font-family: Arial, sans-serif;
-    color: #111827;
+    padding: 20px;
+    font-family: "Poppins", sans-serif;
+    color: #0f172a;
+    min-height: 100vh;
+    background: radial-gradient(circle at top left, #93c5fd 0, #dbeafe 40%, #f1f5f9 80%);
   }
 
-  .wrapper {
-    max-width: 1200px;
-    margin: auto;
+  body::before,
+  body::after {
+    content:"";
+    position:fixed;
+    width:240px;
+    height:240px;
+    border-radius:999px;
+    filter:blur(60px);
+    opacity:0.45;
+    z-index:-1;
   }
+  body::before { top:-60px; left:-40px; background:#60a5fa; }
+  body::after { bottom:-70px; right:-30px; background:#f472b6; }
 
-  /* Header */
+  .wrapper { max-width:1050px; margin:auto; }
+
+  /* HEADER */
   .page-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+    padding:10px 0;
   }
-  .page-header-icon { font-size: 26px; }
-  .page-title { font-size: 22px; font-weight: 700; }
+  .page-header-icon { font-size:28px; }
+  .page-title { font-size:22px; font-weight:700; }
 
   .back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: none;
-    background: #e5e7eb;
-    cursor: pointer;
-    font-size: 13px;
-    margin-bottom: 12px;
+    padding:8px 18px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.6);
+    border:1px solid rgba(148,163,184,0.4);
+    cursor:pointer;
+    font-size:13px;
+    margin-bottom:14px;
   }
-  .back-btn:hover { background: #d1d5db; }
 
-  /* Card */
+  /* GLASS CARD */
   .card {
-    background: #ffffff;
-    padding: 16px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148,163,184,0.45);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
   }
 
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
+  .card-title { font-size:17px; font-weight:600; margin-bottom:10px; }
 
-  .card-title {
-    font-size: 16px;
-    font-weight: 600;
-  }
-
-  /* Form */
-  label {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    display: block;
-    color: #374151;
-  }
-
-  input[type="text"],
-  input[type="email"] {
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-    font-size: 14px;
-  }
-
-  input:focus {
-    border-color: #2563eb;
-    outline: none;
-    box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
-  }
-
+  /* FORM */
   .form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px 16px;
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .form-row > div {
+    flex:1;
+    min-width:240px;
+    max-width:320px;
   }
 
-  /* Buttons */
-  .btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    font-size: 14px;
-    cursor: pointer;
+  input {
+    width:100%;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(148,163,184,0.6);
+    background:rgba(255,255,255,0.7);
+    font-size:14px;
   }
 
-  .btn-primary {
-    background: #2563eb;
-    color: white;
-  }
-  .btn-primary:hover { background: #1d4ed8; }
-
-  .btn-danger {
-    background:#dc2626;
+  /* SAVE BUTTON + LOADING ICON */
+  #saveBtn {
+    margin-top:10px;
+    padding:10px 18px;
+    font-size:15px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#2563eb,#38bdf8);
     color:white;
+    border:none;
+    cursor:pointer;
   }
-  .btn-danger:hover { background:#b91c1c; }
-
-  .btn-sm {
-    padding: 4px 10px;
-    font-size: 12px;
-    border-radius: 999px;
-  }
-
-  /* Spinner */
-  .spinner {
-    border: 3px solid #e5e7eb;
-    border-top: 3px solid #2563eb;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { 100% { transform: rotate(360deg); } }
 
   #loadingIcon {
-    display: none;
-    margin-left: 10px;
-    font-size: 13px;
-    color: #4b5563;
+    display:none;
+    margin-top:10px;
+    font-size:14px;
+    color:#2563eb;
   }
 
-  /* Table */
+  .spinner {
+    width:18px;
+    height:18px;
+    border:3px solid #e5e7eb;
+    border-top:3px solid #2563eb;
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin { 100% { transform:rotate(360deg); } }
+
+  /* TABLE */
   table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    border: 1px solid #d1d5db;
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.55);
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(148,163,184,0.45);
+    border-radius:12px;
+    overflow:hidden;
+    text-align:center;
   }
 
   th, td {
-    padding: 8px;
-    border: 1px solid #d1d5db;
-    white-space: nowrap;
+    padding:10px;
+    border-bottom:1px solid rgba(148,163,184,0.35);
+    text-align:center;
   }
 
-  thead { background: #f9fafb; }
+  thead { background:rgba(255,255,255,0.75); font-weight:600; }
+  tr:hover td { background:rgba(255,255,255,0.8); }
 
-  tr:hover td { background: #f3f4f6; }
+  .btn-sm {
+    padding:5px 12px;
+    font-size:12px;
+    border-radius:999px;
+    border:none;
+    cursor:pointer;
+  }
 
+  .edit-btn {
+    background:#3b82f6;
+    color:white;
+  }
+  .delete-btn {
+    background:#dc2626;
+    color:white;
+  }
+
+  /* SWEETALERT SAME GLASS THEME */
+  .swal2-popup {
+    background:rgba(255,255,255,0.7) !important;
+    backdrop-filter:blur(14px) !important;
+    border-radius:18px !important;
+    border:1px solid rgba(148,163,184,0.45) !important;
+  }
 </style>
 </head>
-
 <body>
+
 <div class="wrapper">
 
-  <!-- Header -->
   <div class="page-header">
     <div class="page-header-icon">🛒</div>
     <div class="page-title">Buyer Management</div>
   </div>
 
-  <button class="back-btn" onclick="window.location.href='index.html'">⬅ Back</button>
+  <button class="back-btn" onclick="location.href='index.html'">⬅ Back</button>
 
-  <!-- Add Buyer -->
+  <!-- ADD BUYER -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">Add / Edit Buyer</div>
-    </div>
+    <div class="card-title">Add / Edit Buyer</div>
 
     <input type="hidden" id="buyerId">
 
     <div class="form-row">
       <div>
         <label>Name</label>
-        <input type="text" id="b_name" placeholder="Buyer name">
+        <input type="text" id="b_name">
       </div>
 
       <div>
         <label>Email</label>
-        <input type="email" id="b_email" placeholder="example@mail.com">
+        <input type="email" id="b_email">
       </div>
     </div>
 
     <div class="form-row">
       <div>
         <label>Phone</label>
-        <input type="text" id="b_phone" placeholder="Phone number">
+        <input type="text" id="b_phone">
       </div>
 
       <div>
         <label>Address</label>
-        <input type="text" id="b_address" placeholder="Address">
+        <input type="text" id="b_address">
       </div>
     </div>
 
-    <button class="btn btn-primary" id="saveBtn">💾 Save</button>
-    <span id="loadingIcon"><span class="spinner"></span> Saving...</span>
+    <button class="btn-primary" id="saveBtn">💾 Save</button>
+    <div id="loadingIcon"><span class="spinner"></span> Saving...</div>
   </div>
 
-  <!-- Buyer List -->
+  <!-- BUYER LIST -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">Buyer List</div>
-    </div>
+    <div class="card-title">Buyer List</div>
 
-    <div style="overflow-x:auto; width:100%;">
+    <div style="overflow-x:auto;">
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Action</th>
+            <th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Action</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -235,46 +230,50 @@
 
 </div>
 
-<!-- Firebase Logic -->
+<!-- FIREBASE LOGIC -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs,
-  updateDoc, deleteDoc, doc, where, query
+  updateDoc, deleteDoc, doc, query, where
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
-  authDomain: "tak-agro.firebaseapp.com",
-  projectId: "tak-agro",
-  storageBucket: "tak-agro.firebasestorage.app",
-  messagingSenderId: "153802937772",
-  appId: "1:153802937772:web:abca377434d940d0b5ac69"
-};
+const app = initializeApp({
+  apiKey:"AIzaSyApcnzkckvflLeuEFozKfChcfE-x44ZDJ0",
+  authDomain:"tak-agro.firebaseapp.com",
+  projectId:"tak-agro",
+  storageBucket:"tak-agro.firebasestorage.app",
+  messagingSenderId:"153802937772",
+  appId:"1:153802937772:web:abca377434d940d0b5ac69"
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const buyerCol = collection(db,"buyers");
 
+async function loadBuyers(){
+  tableBody.innerHTML = "";
+  const snap = await getDocs(buyerCol);
 
-/* ---------------- LOADING ICON FUNCTIONS ---------------- */
-
-function startLoad(){
-  loadingIcon.style.display="inline-flex";
-  saveBtn.disabled = true;
+  snap.forEach(docSnap=>{
+    const d = docSnap.data();
+    tableBody.innerHTML += `
+      <tr>
+        <td>${d.name}</td>
+        <td>${d.email}</td>
+        <td>${d.phone}</td>
+        <td>${d.address}</td>
+        <td>
+          <button class="btn-sm edit-btn" onclick="editBuyer('${docSnap.id}','${d.name}','${d.email}','${d.phone}','${d.address}')">Edit</button>
+          <button class="btn-sm delete-btn" onclick="deleteBuyer('${docSnap.id}')">Delete</button>
+        </td>
+      </tr>`;
+  });
 }
 
-function stopLoad(){
-  loadingIcon.style.display="none";
-  saveBtn.disabled = false;
-}
-
-
-/* ---------------- DUPLICATE CHECK ---------------- */
-
-async function duplicateCheck(email, phone, exclude=null){
-  const q1 = query(buyerCol, where("email","==",email));
-  const q2 = query(buyerCol, where("phone","==",phone));
+/* DUPLICATE CHECK */
+async function checkDuplicate(email, phone, exclude=null){
+  let q1 = query(buyerCol, where("email","==",email));
+  let q2 = query(buyerCol, where("phone","==",phone));
 
   let dup = false;
 
@@ -287,136 +286,119 @@ async function duplicateCheck(email, phone, exclude=null){
   return dup;
 }
 
-
-/* ---------------- TABLE LOAD ---------------- */
-
-async function loadBuyers(){
-  tableBody.innerHTML = "";
-  const snap = await getDocs(buyerCol);
-
-  snap.forEach(docSnap=>{
-    const d = docSnap.data();
-
-    tableBody.innerHTML += `
-      <tr>
-        <td>${d.name}</td>
-        <td>${d.email}</td>
-        <td>${d.phone}</td>
-        <td>${d.address}</td>
-        <td>
-          <button class="btn-sm btn-secondary" onclick="editBuyer('${docSnap.id}','${d.name}','${d.email}','${d.phone}','${d.address}')">✏️ Edit</button>
-          <button class="btn-sm btn-danger" onclick="deleteBuyer('${docSnap.id}')">❌ Delete</button>
-        </td>
-      </tr>`;
-  });
-}
-
-
-/* ---------------- EDIT BUYER POPUP ---------------- */
-
+/* EDIT POPUP */
 window.editBuyer = async function(id, name, email, phone, address){
   
-  const { value: formValues } = await Swal.fire({
+  const { value:data } = await Swal.fire({
     title: "Edit Buyer",
     html: `
-      <input id="sw_name" class="swal2-input" placeholder="Name" value="${name}">
-      <input id="sw_email" class="swal2-input" placeholder="Email" value="${email}">
-      <input id="sw_phone" class="swal2-input" placeholder="Phone" value="${phone}">
-      <input id="sw_address" class="swal2-input" placeholder="Address" value="${address}">
+      <label><b>Name</b></label>
+      <input id="sw_name" class="swal2-input" value="${name}">
+      
+      <label><b>Email</b></label>
+      <input id="sw_email" class="swal2-input" value="${email}">
+      
+      <label><b>Phone</b></label>
+      <input id="sw_phone" class="swal2-input" value="${phone}">
+      
+      <label><b>Address</b></label>
+      <input id="sw_address" class="swal2-input" value="${address}">
     `,
-    confirmButtonText: "💾 Save",
     showCancelButton: true,
+    confirmButtonText: "Save",
+
     preConfirm: () => {
-      return {
-        name: document.getElementById("sw_name").value.trim(),
-        email: document.getElementById("sw_email").value.trim(),
-        phone: document.getElementById("sw_phone").value.trim(),
-        address: document.getElementById("sw_address").value.trim()
-      };
+      const nm = document.getElementById("sw_name").value.trim();
+      const em = document.getElementById("sw_email").value.trim();
+      const ph = document.getElementById("sw_phone").value.trim();
+      const ad = document.getElementById("sw_address").value.trim();
+
+      if(!nm) return Swal.showValidationMessage("Name required");
+
+      if(!/^[0-9]{10}$/.test(ph))
+        return Swal.showValidationMessage("Phone must be exactly 10 digits");
+
+      if(em && !/^\S+@\S+\.\S+$/.test(em))
+        return Swal.showValidationMessage("Invalid email format");
+
+      return { name:nm, email:em, phone:ph, address:ad };
     }
   });
 
-  if (!formValues) return;
+  if(!data) return;
 
-  await updateDoc(doc(db, "buyers", id), formValues);
+  await updateDoc(doc(db,"buyers",id), data);
 
-  Swal.fire("Updated!", "Buyer updated successfully.", "success");
+  Swal.fire("Updated!","Buyer updated successfully.","success");
   loadBuyers();
 };
 
-
-/* ---------------- DELETE BUYER ---------------- */
-
+/* DELETE BUYER */
 window.deleteBuyer = async function(id){
-  
+
   let res = await Swal.fire({
     title: "Delete Buyer?",
     text: "This action cannot be undone.",
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: "Yes, Delete"
+    confirmButtonText: "Delete"
   });
 
   if(!res.isConfirmed) return;
 
   await deleteDoc(doc(db,"buyers",id));
-  Swal.fire("Deleted!", "Buyer removed.", "success");
+
+  Swal.fire("Deleted!","Buyer removed.","success");
   loadBuyers();
 };
 
-
-/* ---------------- SAVE BUYER ---------------- */
-
+/* SAVE BUYER */
 saveBtn.addEventListener("click", async ()=>{
 
-  const data = {
-    name: b_name.value.trim(),
-    email: b_email.value.trim(),
-    phone: b_phone.value.trim(),
-    address: b_address.value.trim()
-  };
+  let name = b_name.value.trim();
+  let email = b_email.value.trim();
+  let phone = b_phone.value.trim();
+  let address = b_address.value.trim();
 
-  if(!data.name || !data.phone){
-    Swal.fire("Required!", "Name & Phone are required.", "warning");
+  if(!name || !phone){
+    Swal.fire("Required!","Name & Phone required","warning");
     return;
   }
 
-  if(data.email && !/^\S+@\S+\.\S+$/.test(data.email)){
-    Swal.fire("Invalid Email!", "Enter a valid email format.", "error");
+  if(!/^[0-9]{10}$/.test(phone)){
+    Swal.fire("Invalid Phone!","Phone must be exactly 10 digits.","error");
     return;
   }
 
-  if(!/^[0-9]+$/.test(data.phone)){
-    Swal.fire("Invalid Phone!", "Phone must contain only digits.", "error");
+  if(email && !/^\S+@\S+\.\S+$/.test(email)){
+    Swal.fire("Invalid Email!","Provide valid email.","error");
     return;
   }
 
-  startLoad();
-
-  if(await duplicateCheck(data.email, data.phone)){
-    stopLoad();
-    Swal.fire("Duplicate!", "Email or Phone already exists.", "error");
+  if(await checkDuplicate(email, phone)){
+    Swal.fire("Duplicate!","Email or Phone already exists.","error");
     return;
   }
 
-  await addDoc(buyerCol, data);
+  saveBtn.style.display="none";
+  loadingIcon.style.display="block";
+
+  await addDoc(buyerCol,{ name,email,phone,address });
+
+  saveBtn.style.display="block";
+  loadingIcon.style.display="none";
+
+  Swal.fire("Saved!","Buyer added successfully!","success");
 
   b_name.value = "";
   b_email.value = "";
   b_phone.value = "";
   b_address.value = "";
 
-  stopLoad();
   loadBuyers();
-
-  Swal.fire("Saved!", "Buyer added successfully!", "success");
 });
 
-
-/* ---------------- INIT ---------------- */
-
 loadBuyers();
-
 </script>
 
 </body>
