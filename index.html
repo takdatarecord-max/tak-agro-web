@@ -9,78 +9,146 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    body {
-      margin:0;
-      font-family: Arial, sans-serif;
-      background:#f3f4f6;
+    * {
+      box-sizing: border-box;
     }
 
-    /* ---------- SIDEBAR ---------- */
+    body {
+      margin:0;
+      font-family: "Poppins", Arial, sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top left, #bfdbfe 0, #e0f2fe 35%, #f9fafb 80%);
+      color:#0f172a;
+    }
+
+    body::before,
+    body::after {
+      content:"";
+      position:fixed;
+      width:260px;
+      height:260px;
+      border-radius:999px;
+      filter:blur(70px);
+      opacity:.7;
+      z-index:-1;
+    }
+    body::before {
+      top:-80px;
+      left:-60px;
+      background:#93c5fd;
+    }
+    body::after {
+      bottom:-90px;
+      right:-40px;
+      background:#f9a8d4;
+    }
+
     .sidebar {
       width:250px;
-      background:#1e293b;
-      color:#fff;
       height:100vh;
       position:fixed;
       left:0;
       top:0;
-      padding-top:20px;
+      padding:78px 14px 18px;
+      background:rgba(255,255,255,0.22);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-right:1px solid rgba(148,163,184,0.55);
+      box-shadow:10px 0 25px rgba(15,23,42,0.18);
+      border-radius:0 24px 24px 0;
       transition:transform .3s ease;
       z-index:10;
+      color:#0f172a;
     }
+
     .sidebar h2 {
       text-align:center;
-      margin:0 0 15px 0;
+      margin:0 0 16px 0;
+      font-size:19px;
+      letter-spacing:0.06em;
+      text-transform:uppercase;
+      color:#1e293b;
     }
+
     .sidebar a {
-      display:block;
-      padding:12px 18px;
-      color:#fff;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      margin-bottom:6px;
+      color:#111827;
       text-decoration:none;
-      font-size:15px;
-      border-bottom:1px solid rgba(255,255,255,0.05);
+      font-size:14px;
+      border-radius:12px;
+      transition:0.2s;
     }
-    .sidebar a:hover { background:#334155; }
+
+    .sidebar a:hover {
+      background:rgba(59,130,246,0.12);
+      transform:translateX(4px);
+    }
 
     @media(max-width:768px){
-      .sidebar {
-        transform:translateX(-260px);
-      }
-      .sidebar.open {
-        transform:translateX(0);
-      }
+      .sidebar { transform:translateX(-260px); }
+      .sidebar.open { transform:translateX(0); }
     }
 
-    /* ---------- TOP BAR ---------- */
     .topbar {
       position:fixed;
       top:0;
       left:0;
       right:0;
-      height:55px;
-      background:#ffffff;
+      height:60px;
+      background:rgba(255,255,255,0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom:1px solid rgba(148,163,184,0.6);
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 15px;
-      box-shadow:0 2px 4px rgba(0,0,0,0.08);
+      padding:0 18px;
+      box-shadow:0 10px 25px rgba(15,23,42,0.15);
       z-index:20;
+    }
+
+    .topbar-left {
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .menu-btn {
+      font-size:26px;
+      cursor:pointer;
+      display:none;
+    }
+    @media(max-width:768px){
+      .menu-btn { display:block; }
+    }
+
+    .topbar-logo {
+      width:34px;
+      height:34px;
+      border-radius:999px;
+      background:linear-gradient(135deg,#2563eb,#38bdf8);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#f9fafb;
+      font-size:17px;
+      font-weight:700;
+      box-shadow:0 6px 14px rgba(37,99,235,0.6);
     }
 
     .topbar-title {
       font-size:18px;
       font-weight:600;
+      line-height:1.2;
     }
 
-    .menu-btn {
-      font-size:24px;
-      cursor:pointer;
-      display:none;
-    }
-    @media(max-width:768px){
-      .menu-btn {
-        display:block;
-      }
+    .topbar-sub {
+      font-size:11px;
+      color:#6b7280;
     }
 
     .profile-icon {
@@ -90,51 +158,89 @@
       border:2px solid #e5e7eb;
       cursor:pointer;
       object-fit:cover;
+      box-shadow:0 4px 12px rgba(15,23,42,0.25);
     }
 
-    /* ---------- PROFILE MENU ---------- */
     .profile-menu {
       position:absolute;
-      right:15px;
-      top:60px;
-      width:200px;
-      background:#fff;
-      border-radius:8px;
-      box-shadow:0 4px 10px rgba(0,0,0,0.15);
+      right:18px;
+      top:64px;
+      width:210px;
+      background:rgba(255,255,255,0.95);
+      backdrop-filter: blur(14px);
+      border-radius:16px;
+      box-shadow:0 16px 36px rgba(15,23,42,0.3);
       overflow:hidden;
       display:none;
       z-index:30;
-    }
-    .profile-menu div {
-      padding:10px 14px;
-      font-size:14px;
-      border-bottom:1px solid #f1f5f9;
-      cursor:pointer;
-    }
-    .profile-menu div:hover {
-      background:#f3f4f6;
+      border:1px solid rgba(148,163,184,0.6);
     }
 
-    /* ---------- MAIN CONTENT ---------- */
+    .profile-menu div {
+      padding:11px 14px;
+      font-size:14px;
+      border-bottom:1px solid #e5e7eb;
+      cursor:pointer;
+    }
+    .profile-menu div:last-child { border-bottom:none; }
+    .profile-menu div:hover { background:#eef2ff; }
+
     .main {
       margin-left:250px;
-      padding:80px 20px 20px;
+      padding:86px 20px 20px;
       transition:.3s;
     }
     @media(max-width:768px){
-      .main { margin-left:0; }
+      .main { margin-left:0; padding-top:80px; }
     }
+
+    .dashboard-grid {
+      margin-top:22px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+      gap:14px;
+    }
+
+    .card {
+      position:relative;
+      padding:14px 12px;
+      border-radius:16px;
+      background:rgba(255,255,255,0.3);
+      border:1px solid rgba(148,163,184,0.7);
+      backdrop-filter: blur(16px);
+      box-shadow:0 10px 24px rgba(15,23,42,0.18);
+      cursor:pointer;
+      transition:0.2s;
+      min-height:105px;
+      overflow:hidden;
+    }
+
+    .card:hover {
+      transform:translateY(-3px);
+      box-shadow:0 16px 32px rgba(15,23,42,0.22);
+    }
+
+    .card-icon { font-size:22px; margin-bottom:6px; }
+    .card-title { font-size:14px; font-weight:600; }
+    .card-sub { font-size:11px; color:#6b7280; }
   </style>
 </head>
+
 <body>
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <span class="menu-btn" onclick="toggleSidebar()">☰</span>
-  <span class="topbar-title">Tak Agro</span>
+  <div class="topbar-left">
+    <span class="menu-btn" onclick="toggleSidebar()">☰</span>
 
-  <img id="profileIcon"
-       class="profile-icon"
+    <div class="topbar-logo">TA</div>
+    <div>
+      <div class="topbar-title">Tak Agro</div>
+      <div class="topbar-sub">Owner Dashboard</div>
+    </div>
+  </div>
+
+  <img id="profileIcon" class="profile-icon"
        src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
        onclick="toggleProfileMenu()">
 </div>
@@ -152,35 +258,76 @@
   <a href="report.html">📊 Report</a>
 </div>
 
-<!-- PROFILE DROPDOWN -->
+<!-- PROFILE MENU -->
 <div id="profileMenu" class="profile-menu">
   <div onclick="viewProfile()">👀 My Profile</div>
   <div onclick="changePassword()">🔑 Change Password</div>
   <div onclick="logoutUser()">🚪 Logout</div>
 </div>
 
-<!-- MAIN AREA -->
+<!-- MAIN CONTENT -->
 <div class="main">
-  <h1>Welcome to Tak Agro</h1>
-  <p>Select a module from the sidebar.</p>
+
+  <h1>Welcome to Tak Agro 👋</h1>
+  <p>Select a module from the cards or sidebar.</p>
+
+  <div class="dashboard-grid">
+
+    <div class="card" onclick="location.href='employee.html'">
+      <div class="card-icon">👷</div>
+      <div class="card-title">Employees</div>
+      <div class="card-sub">Add & manage staff</div>
+    </div>
+
+    <div class="card" onclick="location.href='buyer.html'">
+      <div class="card-icon">🛒</div>
+      <div class="card-title">Buyers</div>
+      <div class="card-sub">Manage your buyers</div>
+    </div>
+
+    <div class="card" onclick="location.href='product.html'">
+      <div class="card-icon">📦</div>
+      <div class="card-title">Products</div>
+      <div class="card-sub">Product master list</div>
+    </div>
+
+    <div class="card" onclick="location.href='entry.html'">
+      <div class="card-icon">📝</div>
+      <div class="card-title">Entries</div>
+      <div class="card-sub">Create new entries</div>
+    </div>
+
+    <div class="card" onclick="location.href='income.html'">
+      <div class="card-icon">💰</div>
+      <div class="card-title">Income</div>
+      <div class="card-sub">Record incomes</div>
+    </div>
+
+    <div class="card" onclick="location.href='expenditure.html'">
+      <div class="card-icon">🧾</div>
+      <div class="card-title">Expenditure</div>
+      <div class="card-sub">Track expenses</div>
+    </div>
+
+    <div class="card" onclick="location.href='report.html'">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Reports</div>
+      <div class="card-sub">View summaries</div>
+    </div>
+
+  </div>
 </div>
 
-<!-- FIREBASE + AUTH + SINGLE SESSION -->
+<!-- FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
-  getAuth,
-  onAuthStateChanged,
-  signOut,
-  updatePassword
+  getAuth, onAuthStateChanged, signOut, updatePassword
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
 import {
-  getFirestore,
-  doc,
-  getDoc,
-  onSnapshot
+  getFirestore, doc, getDoc, onSnapshot
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -195,35 +342,24 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-
 const OWNER_EMAIL = "bhuraramtak81@gmail.com";
 
-/* ---------------- AUTH + SINGLE SESSION CHECK ---------------- */
 onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
+  if (!user) return window.location.href = "login.html";
 
-  // owner lock
   if (user.email !== OWNER_EMAIL) {
     await signOut(auth);
-    window.location.href = "login.html";
-    return;
+    return window.location.href = "login.html";
   }
 
-  // local session ID
   const localSessionId = localStorage.getItem("ownerSessionId");
-
   if (!localSessionId) {
-    // login via old system / direct open
     await signOut(auth);
     Swal.fire("Session Error", "Please login again.", "warning");
-    window.location.href = "login.html";
-    return;
+    return window.location.href = "login.html";
   }
 
-  // 🔥 REAL-TIME SESSION LISTENER
+  // ⭐ UPDATED POPUP-FIRST SESSION CHECK ⭐
   const sessRef = doc(db, "sessions", "owner");
   onSnapshot(sessRef, async (snap) => {
     if (!snap.exists()) return;
@@ -231,58 +367,50 @@ onAuthStateChanged(auth, async (user) => {
     const serverId = snap.data().sessionId;
 
     if (serverId !== localSessionId) {
-      // koi aur device login ho chuka hai
+
+      // 🔥 1. Popup FIRST
+      await Swal.fire({
+        title: "Session Expired",
+        text: "Your account was logged in from another device.",
+        icon: "warning",
+        confirmButtonText: "OK"
+      });
+
+      // 🔥 2. Logout
       await signOut(auth);
       localStorage.removeItem("ownerSessionId");
 
-      Swal.fire(
-        "Logged out",
-        "Your account was logged in from another device.",
-        "warning"
-      );
-
+      // 🔥 3. Redirect
       window.location.href = "login.html";
     }
   });
 
-  // PROFILE PHOTO LOAD
   try {
     const snap = await getDoc(doc(db, "profiles", "owner"));
-    if (snap.exists() && snap.data().photoURL) {
+    if (snap.exists() && snap.data().photoURL)
       document.getElementById("profileIcon").src = snap.data().photoURL;
-    }
   } catch (e) {}
 });
 
-/* ---------- SIDEBAR TOGGLE (MOBILE) ---------- */
-window.toggleSidebar = function () {
+window.toggleSidebar = () => {
   document.getElementById("sidebar").classList.toggle("open");
 };
-
-/* ---------- PROFILE MENU ---------- */
-window.toggleProfileMenu = function () {
+window.toggleProfileMenu = () => {
   const pm = document.getElementById("profileMenu");
   pm.style.display = pm.style.display === "block" ? "none" : "block";
 };
+window.viewProfile = () => window.location.href = "profile.html";
 
-/* ---------- OPEN MY PROFILE ---------- */
-window.viewProfile = function () {
-  window.location.href = "profile.html";
-};
-
-/* ---------- CHANGE PASSWORD ---------- */
-window.changePassword = async function () {
+window.changePassword = async () => {
   const { value: newPass } = await Swal.fire({
     title: "New Password",
     input: "password",
-    inputPlaceholder: "Enter new password",
     showCancelButton: true,
     confirmButtonText: "Update"
   });
 
   if (!newPass) return;
-  if (newPass.length < 6)
-    return Swal.fire("Error", "Password must be at least 6 characters.", "error");
+  if (newPass.length < 6) return Swal.fire("Error", "Password must be at least 6 characters.", "error");
 
   try {
     await updatePassword(auth.currentUser, newPass);
@@ -292,8 +420,7 @@ window.changePassword = async function () {
   }
 };
 
-/* ---------- LOGOUT ---------- */
-window.logoutUser = async function () {
+window.logoutUser = async () => {
   const out = await Swal.fire({
     title:"Logout?",
     showCancelButton:true,
@@ -307,7 +434,6 @@ window.logoutUser = async function () {
   window.location.href = "login.html";
 };
 
-/* ---------- CLOSE PROFILE MENU OUTSIDE CLICK ---------- */
 window.addEventListener("click", (e) => {
   const menu = document.getElementById("profileMenu");
   const icon = document.getElementById("profileIcon");
